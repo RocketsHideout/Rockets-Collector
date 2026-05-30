@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rocket's Collector</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0a0a'/><text y='72' x='50' text-anchor='middle' font-size='65'>📋</text></svg>">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap');
+
+  :root {
+    --red: #e8001d;
+    --red2: #b50016;
+    --black: #0a0a0a;
+    --surface: #141414;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --text: #f0f0f0;
+    --muted: #777;
+    --green: #00d084;
+    --amber: #ffb300;
+    --blue: #4fa3ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 3px solid var(--red);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    width: 44px; height: 44px;
+    background: var(--red);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 22px; color: #fff;
+  }
+
+  .header-text { flex: 1; }
+  .header-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: 1px; text-transform: uppercase; }
+  .header-sub { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+
+  .container { max-width: 500px; margin: 0 auto; padding: 16px; }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 13px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 12px;
+  }
+
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+
+  input, select, textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    padding: 11px 13px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--red); }
+  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23777' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; padding-right: 36px; }
+  textarea { resize: none; height: 80px; }
+
+  .btn {
+    width: 100%;
+    background: var(--red);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 16px;
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 14px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .btn:hover { background: var(--red2); }
+  .btn:disabled { background: #333; color: var(--muted); cursor: not-allowed; }
+
+  .btn-secondary {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 13px;
+    letter-spacing: .5px; text-transform: uppercase;
+    padding: 10px 14px;
+    cursor: pointer;
+  }
+
+  .btn-sm {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--muted);
+    font-family: 'Barlow', sans-serif;
+    font-size: 12px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  .btn-sm:hover { border-color: var(--red); color: var(--red); }
+
+  /* CARD TYPES */
+  .card-types { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .type-btn {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    color: var(--muted);
+    font-size: 12px; font-weight: 600;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .type-btn.active { border-color: var(--red); color: var(--red); background: rgba(232,0,29,0.08); }
+
+  /* WANT LIST */
+  .want-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .want-item:last-child { border-bottom: none; }
+  .want-item-info { flex: 1; }
+  .want-item-name { font-size: 13px; font-weight: 600; }
+  .want-item-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .want-badge {
+    font-size: 10px; font-weight: 700;
+    padding: 3px 7px; border-radius: 5px;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  .badge-rh { background: rgba(79,163,255,0.15); color: var(--blue); }
+  .badge-common { background: rgba(119,119,119,0.15); color: var(--muted); }
+  .badge-uncommon { background: rgba(0,208,132,0.15); color: var(--green); }
+  .badge-rare { background: rgba(255,179,0,0.15); color: var(--amber); }
+  .badge-holo { background: rgba(232,0,29,0.15); color: var(--red); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0; margin-bottom: 16px; background: var(--surface); border-radius: 10px; padding: 4px; }
+  .tab { flex: 1; background: none; border: none; border-radius: 7px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: .5px; text-transform: uppercase; padding: 9px; cursor: pointer; transition: all .2s; }
+  .tab.active { background: var(--red); color: #fff; }
+
+  /* AUTH */
+  .auth-screen { padding: 20px 0; }
+  .auth-tabs { display: flex; gap: 0; margin-bottom: 20px; background: var(--surface2); border-radius: 10px; padding: 4px; }
+  .auth-tab { flex: 1; background: none; border: none; border-radius: 7px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: .5px; padding: 10px; cursor: pointer; }
+  .auth-tab.active { background: var(--red); color: #fff; }
+
+  .error-msg { background: rgba(232,0,29,0.1); border: 1px solid rgba(232,0,29,0.3); border-radius: 8px; color: var(--red); font-size: 13px; padding: 10px 12px; margin-bottom: 12px; display: none; }
+  .success-msg { background: rgba(0,208,132,0.1); border: 1px solid rgba(0,208,132,0.3); border-radius: 8px; color: var(--green); font-size: 13px; padding: 10px 12px; margin-bottom: 12px; display: none; }
+
+  .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 100;
+  }
+  .nav-btn {
+    flex: 1; background: none; border: none;
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 11px;
+    letter-spacing: .5px; text-transform: uppercase;
+    padding: 12px 4px 10px;
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .nav-btn.active { color: var(--red); }
+  .nav-icon { font-size: 20px; line-height: 1; }
+
+  .page-pad { padding-bottom: 70px; }
+
+  /* BADGE COUNT */
+  .badge-count {
+    position: relative;
+  }
+  .badge-count::after {
+    content: attr(data-count);
+    position: absolute;
+    top: -6px; right: -8px;
+    background: var(--red);
+    color: #fff;
+    font-size: 9px; font-weight: 700;
+    min-width: 16px; height: 16px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 3px;
+  }
+
+  .qty-control { display: flex; align-items: center; gap: 6px; }
+  .qty-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 16px; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .qty-num { font-size: 15px; font-weight: 600; min-width: 20px; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">R</div>
+  <div class="header-text">
+    <div class="header-title">Rockets Hideout</div>
+    <div class="header-sub">Rocket's Collector</div>
+  </div>
+  <div id="user-badge" style="font-size:12px;color:var(--muted);cursor:pointer;" onclick="signOut()"></div>
+</div>
+
+<div class="container page-pad" id="app">
+  <div style="text-align:center;padding:40px 0;color:var(--muted);">Starting...</div>
+</div>
+
+<div class="bottom-nav" id="bottom-nav" style="display:none;">
+  <button class="nav-btn active" onclick="showPage('browse')" id="nav-browse">
+    <span class="nav-icon">🔍</span>Browse
+  </button>
+  <button class="nav-btn" onclick="showPage('list')" id="nav-list">
+    <span class="nav-icon badge-count" id="list-badge" data-count="">📋</span>My List
+  </button>
+  <button class="nav-btn" onclick="showPage('buying')" id="nav-buying">
+    <span class="nav-icon">⚡</span>We're Buying
+  </button>
+  <button class="nav-btn" onclick="showPage('news')" id="nav-news">
+    <span class="nav-icon">📰</span>News
+  </button>
+  <button class="nav-btn" onclick="showPage('requests')" id="nav-requests">
+    <span class="nav-icon">📦</span>Requests
+  </button>
+</div>
+
+<!-- PUBLIC BUYING BOTTOM NAV (shown when not logged in) -->
+<div class="bottom-nav" id="bottom-nav-public" style="display:none;">
+  <button class="nav-btn active" onclick="showPublicPage('buying')" id="nav-public-buying">
+    <span class="nav-icon">⚡</span>We're Buying
+  </button>
+  <button class="nav-btn" onclick="showPublicPage('news')" id="nav-public-news">
+    <span class="nav-icon">📰</span>News
+  </button>
+  <button class="nav-btn" onclick="renderAuth()" id="nav-public-login">
+    <span class="nav-icon">👤</span>Sign In
+  </button>
+</div>
+
+<script>
+// ── CONFIG ──
+const SUPABASE_URL = 'https://zramsbsmvpnbbfefwxdu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyYW1zYnNtdnBuYmJmZWZ3eGR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDg0MzksImV4cCI6MjA5NTQ4NDQzOX0.k0N5noE1CudzoNixHzllshiSC_MDsos4IkYqtt-I_Hg';
+const WA_NUMBER = '447539296035';
+
+let currentUser = null;
+let wantList = JSON.parse(localStorage.getItem('rh_wantlist') || '[]');
+let currentPage = 'browse';
+let selectedSet = null;
+let selectedType = 'Reverse Holo';
+
+// ── POKEMON TCG API ──
+const TCG_API = 'https://api.pokemontcg.io/v2';
+const TCG_SET_IDS = {
+  'pitch-black': 'me5',
+  'chaos-rising': 'me4',
+  'perfect-order': 'me3',
+  'phantasmal-flames': 'me2',
+  'mega-evolution': 'me1',
+  'white-flare': 'sv10pt5wf',
+  'black-bolt': 'sv10pt5bb',
+  'destined-rivals': 'sv10',
+  'journey-together': 'sv9',
+  'prismatic-evolutions': 'sv8pt5',
+  'surging-sparks': 'sv8',
+  'stellar-crown': 'sv7',
+  'shrouded-fable': 'sv6pt5',
+  'twilight-masquerade': 'sv6',
+  'temporal-forces': 'sv5',
+  'paldean-fates': 'sv4pt5',
+  'paradox-rift': 'sv4',
+  'obsidian-flames': 'sv3',
+  '151': 'sv3pt5',
+  'paldea-evolved': 'sv2',
+  'scarlet-violet-base': 'sv1',
+};
+
+let setCards = [];
+let cardSearchTimeout = null;
+
+// Sets not yet indexed in the Pokemon TCG API
+const UNSUPPORTED_SETS = ['ascended-heroes', 'pitch-black', 'chaos-rising', 'perfect-order', 'phantasmal-flames', 'mega-evolution', 'white-flare', 'black-bolt'];
+
+async function fetchSetCards(setId) {
+  // Use hardcoded data if available
+  if(HARDCODED_SETS[setId]) return HARDCODED_SETS[setId];
+  if(UNSUPPORTED_SETS.includes(setId)) return [];
+  const tcgSetId = TCG_SET_IDS[setId];
+  if (!tcgSetId) return [];
+  try {
+    let allCards = [];
+    let page = 1;
+    while(true) {
+      const res = await fetch(`${TCG_API}/cards?q=set.id:${tcgSetId}&pageSize=250&page=${page}&orderBy=number`, {
+        headers: { 'X-Api-Key': '' }
+      });
+      const data = await res.json();
+      const cards = data.data || [];
+      allCards = allCards.concat(cards.map(c => ({
+        name: c.name,
+        number: c.number,
+        rarity: c.rarity || 'Common',
+        supertype: c.supertype,
+      })));
+      if(cards.length < 250) break;
+      page++;
+    }
+    allCards.sort((a, b) => parseInt(a.number) - parseInt(b.number));
+    return allCards;
+  } catch(e) {
+    console.log('TCG API error:', e);
+    return [];
+  }
+}
+
+function getCardPrice(rarity, isReverse, setId) {
+  if(['Rare Ultra', 'Rare Secret', 'Rare Rainbow', 'Hyper Rare', 'Special Illustration Rare', 'Illustration Rare', 'Double Rare', 'Rare Holo V', 'Rare Holo VMAX', 'Rare Holo VSTAR', 'Rare Holo ex', 'ACE SPEC Rare'].includes(rarity)) {
+    return 'POA';
+  }
+  // 151 reverses are priced individually due to nostalgia premium
+  if(setId === '151' && isReverse) {
+    return 'POA';
+  }
+  if(isReverse) {
+    if(['Common', 'Uncommon', 'Promo'].includes(rarity)) return '£1.00';
+    return '£1.25'; // Rare reverse
+  }
+  if(['Common', 'Uncommon', 'Promo'].includes(rarity)) return '£0.25';
+  if(['Rare', 'Rare Holo'].includes(rarity)) return '£0.50';
+  return 'POA';
+}
+
+function renderCardSearch() {
+  const noReverseTypes = ['Rare Ultra', 'Rare Secret', 'Rare Rainbow', 'Hyper Rare', 'Mega Hyper Rare',
+    'Special Illustration Rare', 'Illustration Rare', 'Rare BREAK', 'LEGEND', 
+    'Rare Shining', 'Amazing Rare', 'Radiant Rare', 'Promo',
+    'Double Rare', 'Rare Holo V', 'Rare Holo VMAX', 'Rare Holo VSTAR', 'Rare Holo ex', 'ACE SPEC Rare'];
+  
+  const options = [];
+  setCards.forEach(c => {
+    const displayRarity = c.rarity === 'Promo' ? 'Common' : c.rarity;
+    const canBeReverse = !noReverseTypes.includes(c.rarity);
+    const basePrice = getCardPrice(displayRarity, false, selectedSet.id);
+    const revPrice = getCardPrice(displayRarity, true, selectedSet.id);
+    
+    options.push(`<option value="${c.number}|${displayRarity}|base|${basePrice}">${c.name} · #${c.number} · ${displayRarity} · ${basePrice}</option>`);
+    if (canBeReverse) {
+      options.push(`<option value="${c.number}|Reverse Holo|reverse|${revPrice}">${c.name} · #${c.number} · Reverse Holo · ${revPrice}</option>`);
+    }
+  });
+  
+  return `
+    <div class="field">
+      <label>Select Card</label>
+      <select id="card-select" onchange="selectCardFromDropdown()" style="width:100%;">
+        <option value="">— Choose a card —</option>
+        ${options.join('')}
+      </select>
+    </div>`;
+}
+
+function selectCardFromDropdown() {
+  const sel = document.getElementById('card-select');
+  if (!sel.value) return;
+  const [number, rarity] = sel.value.split('|');
+  window._selectedCardNumber = number;
+  const typeMap = {
+    'Common': 'Common', 'Uncommon': 'Uncommon', 'Rare': 'Rare',
+    'Rare Holo': 'Holo Rare', 'Rare Ultra': 'Ultra Rare',
+    'Rare Secret': 'Secret Rare', 'Rare Rainbow': 'Secret Rare',
+    'Illustration Rare': 'Full Art', 'Special Illustration Rare': 'Special Illustration Rare',
+    'Hyper Rare': 'Secret Rare', 'Reverse Holo': 'Reverse Holo',
+  };
+  const mapped = typeMap[rarity] || 'Rare';
+  selectedType = mapped;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.textContent === mapped));
+}
+
+function searchCards() {
+  clearTimeout(cardSearchTimeout);
+  cardSearchTimeout = setTimeout(() => {
+    const q = document.getElementById('card-search-input').value.toLowerCase().trim();
+    const resultsEl = document.getElementById('card-results');
+    if (!q || q.length < 2) { resultsEl.style.display = 'none'; return; }
+    const matches = setCards.filter(c => c.name.toLowerCase().includes(q)).slice(0, 20);
+    if (!matches.length) { resultsEl.innerHTML = '<div style="padding:10px;font-size:13px;color:var(--muted);">No cards found</div>'; resultsEl.style.display = 'block'; return; }
+    resultsEl.innerHTML = matches.map(c =>
+      `<div onclick="selectCard('${c.name.replace(/'/g,"\\'")}','${c.number}','${c.rarity}')" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <span style="font-weight:600;">${c.name}</span>
+        <span style="color:var(--muted);font-size:11px;"> · #${c.number} · ${c.rarity}</span>
+      </div>`
+    ).join('');
+    resultsEl.style.display = 'block';
+  }, 200);
+}
+
+function selectCard(name, number, rarity) {
+  document.getElementById('card-search-input').value = name;
+  document.getElementById('card-results').style.display = 'none';
+  document.getElementById('selected-card-name').textContent = name + ' · #' + number;
+  document.getElementById('selected-card-meta').textContent = rarity;
+  document.getElementById('selected-card-display').style.display = 'block';
+  // Auto-select card type based on rarity
+  const typeMap = {
+    'Common': 'Common', 'Uncommon': 'Uncommon', 'Rare': 'Rare',
+    'Rare Holo': 'Holo Rare', 'Rare Ultra': 'Ultra Rare',
+    'Rare Secret': 'Secret Rare', 'Rare Rainbow': 'Secret Rare',
+    'Illustration Rare': 'Full Art', 'Special Illustration Rare': 'Special Illustration Rare',
+    'Hyper Rare': 'Secret Rare',
+  };
+  const mapped = typeMap[rarity] || 'Rare';
+  selectedType = mapped;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.textContent === mapped));
+  window._selectedCardNumber = number;
+}
+
+
+const SETS = [
+  { id: 'pitch-black', name: 'Mega Evolution — Pitch Black', year: 'Jul 2026' },
+  { id: 'chaos-rising', name: 'Mega Evolution — Chaos Rising', year: 'May 2026' },
+  { id: 'perfect-order', name: 'Mega Evolution — Perfect Order', year: 'Mar 2026' },
+  { id: 'ascended-heroes', name: 'Mega Evolution — Ascended Heroes', year: 'Jan 2026' },
+  { id: 'phantasmal-flames', name: 'Mega Evolution — Phantasmal Flames', year: 'Nov 2025' },
+  { id: 'mega-evolution', name: 'Mega Evolution', year: 'Sep 2025' },
+  { id: 'white-flare', name: 'White Flare', year: 'Jul 2025' },
+  { id: 'black-bolt', name: 'Black Bolt', year: 'Jul 2025' },
+  { id: 'destined-rivals', name: 'Destined Rivals', year: 'May 2025' },
+  { id: 'journey-together', name: 'Journey Together', year: 'Mar 2025' },
+  { id: 'prismatic-evolutions', name: 'Prismatic Evolutions', year: 'Jan 2025' },
+  { id: 'surging-sparks', name: 'Surging Sparks', year: 'Nov 2024' },
+  { id: 'stellar-crown', name: 'Stellar Crown', year: 'Sep 2024' },
+  { id: 'shrouded-fable', name: 'Shrouded Fable', year: 'Aug 2024' },
+  { id: 'twilight-masquerade', name: 'Twilight Masquerade', year: 'May 2024' },
+  { id: 'temporal-forces', name: 'Temporal Forces', year: 'Mar 2024' },
+  { id: 'paldean-fates', name: 'Paldean Fates', year: 'Jan 2024' },
+  { id: 'paradox-rift', name: 'Paradox Rift', year: 'Nov 2023' },
+  { id: '151', name: 'Pokémon 151', year: 'Sep 2023' },
+  { id: 'obsidian-flames', name: 'Obsidian Flames', year: 'Aug 2023' },
+  { id: 'paldea-evolved', name: 'Paldea Evolved', year: 'Jun 2023' },
+  { id: 'scarlet-violet-base', name: 'Scarlet & Violet Base', year: 'Mar 2023' },
+];
+
+const CARD_TYPES = ['Reverse Holo', 'Common', 'Uncommon', 'Rare', 'Holo Rare', 'Ultra Rare', 'Secret Rare', 'Full Art', 'Special Illustration Rare'];
+
+const TYPE_BADGE = {
+  'Reverse Holo': 'badge-rh',
+  'Common': 'badge-common',
+  'Uncommon': 'badge-uncommon',
+  'Rare': 'badge-rare',
+  'Holo Rare': 'badge-holo',
+  'Ultra Rare': 'badge-rare',
+  'Secret Rare': 'badge-holo',
+  'Full Art': 'badge-rare',
+  'Special Illustration Rare': 'badge-holo',
+};
+
+async function db(method, table, body, query = '') {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + table + query, {
+    method,
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      Prefer: method === 'POST' ? 'return=representation' : '',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok && method !== 'PATCH') throw new Error(await res.text());
+  if (method === 'GET') return res.json();
+  return res.json().catch(() => null);
+}
+
+async function hashPassword(pw) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function saveWantList() {
+  localStorage.setItem('rh_wantlist', JSON.stringify(wantList));
+  updateListBadge();
+}
+
+function updateListBadge() {
+  const badge = document.getElementById('list-badge');
+  if (badge) badge.setAttribute('data-count', wantList.length > 0 ? wantList.length : '');
+}
+
+function showPage(page) {
+  currentPage = page;
+  ['browse', 'list', 'buying', 'news', 'requests'].forEach(p => {
+    const btn = document.getElementById('nav-' + p);
+    if (btn) btn.classList.toggle('active', p === page);
+  });
+  if (page === 'browse') renderBrowse();
+  else if (page === 'list') renderList();
+  else if (page === 'buying') renderBuyingBoard();
+  else if (page === 'news') renderNews();
+  else if (page === 'requests') renderRequests();
+}
+
+function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+  else { input.type = 'password'; btn.textContent = '👁'; }
+}
+
+// ── AUTH ──
+function renderAuth() {
+  document.getElementById('bottom-nav').style.display = 'none';
+  document.getElementById('bottom-nav-public').style.display = 'flex';
+  document.getElementById('app').innerHTML = `
+    <div class="auth-screen">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;letter-spacing:1px;">GET THE CARDS<br>YOU NEED</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:6px;">Submit your want list, track requests, and stay up to date on Pokémon TCG news.</div>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-signin" onclick="switchAuth('signin')">Sign In</button>
+        <button class="auth-tab" id="tab-register" onclick="switchAuth('register')">Register</button>
+      </div>
+      <div id="auth-signin">
+        <div class="error-msg" id="signin-err"></div>
+        <div class="field"><label>Email</label><input type="email" id="si-email" placeholder="your@email.com" /></div>
+        <div class="field"><label>Password</label><div style="position:relative;"><input type="password" id="si-pass" placeholder="Password" style="padding-right:44px;" /><button onclick="togglePw('si-pass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;">👁</button></div></div>
+        <button class="btn" onclick="signIn()">Sign In</button>
+      </div>
+      <div id="auth-register" style="display:none;">
+        <div class="error-msg" id="reg-err"></div>
+        <div class="field"><label>Full Name</label><input type="text" id="reg-name" placeholder="Your full name" /></div>
+        <div class="field"><label>Email</label><input type="email" id="reg-email" placeholder="your@email.com" /></div>
+        <div class="field"><label>Phone <span style="color:var(--red);">*</span></label><input type="tel" id="reg-phone" placeholder="07xxx xxxxxx" inputmode="tel" /></div>
+        <div class="field"><label>Password</label><div style="position:relative;"><input type="password" id="reg-pass" placeholder="Min 6 characters" style="padding-right:44px;" /><button onclick="togglePw('reg-pass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;">👁</button></div></div>
+        <button class="btn" onclick="register()">Create Account</button>
+      </div>
+    </div>`;
+}
+
+function switchAuth(tab) {
+  document.getElementById('auth-signin').style.display = tab === 'signin' ? 'block' : 'none';
+  document.getElementById('auth-register').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+}
+
+async function signIn() {
+  const email = document.getElementById('si-email').value.trim().toLowerCase();
+  const pass = document.getElementById('si-pass').value;
+  const err = document.getElementById('signin-err');
+  err.style.display = 'none';
+  try {
+    const hash = await hashPassword(pass);
+    const res = await db('GET', 'wantlist_customers', null, `?email=eq.${encodeURIComponent(email)}&password_hash=eq.${hash}&select=*`);
+    if (!res || !res.length) { err.textContent = 'Invalid email or password'; err.style.display = 'block'; return; }
+    currentUser = res[0];
+    localStorage.setItem('rh_wl_user', JSON.stringify(currentUser));
+    enterApp();
+  } catch(e) { err.textContent = 'Error signing in. Please try again.'; err.style.display = 'block'; }
+}
+
+async function register() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const pass = document.getElementById('reg-pass').value;
+  const err = document.getElementById('reg-err');
+  err.style.display = 'none';
+  if (!name || !email || !phone || !pass) { err.textContent = 'Please fill in all fields'; err.style.display = 'block'; return; }
+  if (pass.length < 6) { err.textContent = 'Password must be at least 6 characters'; err.style.display = 'block'; return; }
+  try {
+    const hash = await hashPassword(pass);
+    const res = await db('POST', 'wantlist_customers', { name, email, phone, password_hash: hash });
+    console.log('Register response:', JSON.stringify(res));
+    if (!res || !res.length) { err.textContent = 'Account may already exist. Try signing in. Debug: ' + JSON.stringify(res); err.style.display = 'block'; return; }
+    currentUser = res[0];
+    localStorage.setItem('rh_wl_user', JSON.stringify(currentUser));
+    enterApp();
+  } catch(e) { err.textContent = 'Error: ' + e.message; err.style.display = 'block'; }
+}
+
+function signOut() {
+  currentUser = null;
+  localStorage.removeItem('rh_wl_user');
+  renderAuth();
+}
+
+function enterApp() {
+  document.getElementById('user-badge').textContent = currentUser.name.split(' ')[0];
+  document.getElementById('bottom-nav').style.display = 'flex';
+  document.getElementById('bottom-nav-public').style.display = 'none';
+  updateListBadge();
+  showPage('browse');
+}
+
+// ── BROWSE ──
+function renderBrowse() {
+  const series = [...new Set(SETS.map(s => s.series))];
+  document.getElementById('app').innerHTML = `
+    <div style="margin-bottom:12px;">
+      <input type="text" id="set-search" placeholder="Search sets..." oninput="filterSets()" style="margin-bottom:0;" />
+    </div>
+    <div id="sets-list">
+      ${renderSetsList(SETS)}
+    </div>`;
+}
+
+function renderSetsList(sets) {
+  return sets.map(s => `
+    <div onclick="selectSet('${s.id}')" style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:6px;cursor:pointer;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div>
+        <div style="font-size:14px;font-weight:600;">${s.name}</div>
+        <div style="font-size:11px;color:var(--muted);">${s.year}</div>
+      </div>
+      <div style="color:var(--muted);font-size:18px;">›</div>
+    </div>`).join('');
+}
+
+function filterSets() {
+  const q = document.getElementById('set-search').value.toLowerCase();
+  const filtered = q ? SETS.filter(s => s.name.toLowerCase().includes(q)) : SETS;
+  document.getElementById('sets-list').innerHTML = renderSetsList(filtered);
+}
+
+async function selectSet(setId) {
+  selectedSet = SETS.find(s => s.id === setId);
+  selectedType = 'Reverse Holo';
+  window._selectedCardNumber = '';
+  document.getElementById('app').innerHTML = `
+    <div style="text-align:center;padding:60px 20px;">
+      <div style="animation:dance 0.5s infinite alternate;display:inline-block;">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" style="width:120px;height:120px;object-fit:contain;" />
+      </div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px;margin-top:16px;">LOADING CARDS...</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px;">${selectedSet.name}</div>
+    </div>
+    <style>
+      @keyframes dance {
+        0% { transform: rotate(-12deg) scale(1) translateY(0px); }
+        100% { transform: rotate(12deg) scale(1.1) translateY(-8px); }
+      }
+    </style>`;
+  setCards = await fetchSetCards(setId);
+  if(setCards.length === 0) {
+    // Set not in API yet — show manual entry
+    document.getElementById('app').innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <button class="btn-sm" onclick="renderBrowse()">← Back</button>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;">${selectedSet.name}</div>
+          <div style="font-size:11px;color:var(--muted);">${selectedSet.year}</div>
+        </div>
+      </div>
+      <div class="section" style="background:rgba(255,179,0,0.05);border-color:rgba(255,179,0,0.2);margin-bottom:12px;">
+        <div style="font-size:13px;color:var(--amber);font-weight:600;margin-bottom:4px;">⚡ Card list coming soon</div>
+        <div style="font-size:12px;color:var(--muted);">This is a recent set and our card database hasn't been updated yet. You can still add cards manually below.</div>
+      </div>
+      <div class="section">
+        <div class="section-title">Add Card Manually</div>
+        <div class="field"><label>Card Name</label><input type="text" id="card-search-input" placeholder="e.g. Mega Dragonite ex" autocomplete="off" /></div>
+        <div class="field"><label>Card Number (optional)</label><input type="text" id="card-number-manual" placeholder="e.g. 125/217" autocomplete="off" /></div>
+        <div class="field">
+          <label>Quantity</label>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(-1)">−</button>
+            <span class="qty-num" id="qty-display">1</span>
+            <button class="qty-btn" onclick="changeQty(1)">+</button>
+          </div>
+        </div>
+        <button class="btn" onclick="addToList()">+ Add to Want List</button>
+      </div>
+      <div class="section" id="set-preview">
+        <div class="section-title">Cards Added from This Set</div>
+        <div id="set-cards">${renderSetCards()}</div>
+      </div>`;
+    window._qty = 1;
+    return;
+  }
+  renderAddCard();
+}
+
+function renderAddCard() {
+  document.getElementById('app').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <button class="btn-sm" onclick="renderBrowse()">← Back</button>
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;">${selectedSet.name}</div>
+        <div style="font-size:11px;color:var(--muted);">${setCards.length} cards loaded · ${selectedSet.year}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Add Card to Want List</div>
+
+      ${setCards.length > 0 ? renderCardSearch() : `
+        <div class="field">
+          <label>Card Name</label>
+          <input type="text" id="card-search-input" placeholder="e.g. Charizard ex" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Card Number (optional)</label>
+          <input type="text" id="card-number-manual" placeholder="e.g. 125/091" autocomplete="off" />
+        </div>`}
+
+      <div class="field">
+        <label>Quantity</label>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty(-1)">−</button>
+          <span class="qty-num" id="qty-display">1</span>
+          <button class="qty-btn" onclick="changeQty(1)">+</button>
+        </div>
+      </div>
+
+      <button class="btn" onclick="addToList()">+ Add to Want List</button>
+    </div>
+
+    <div class="section" id="set-preview">
+      <div class="section-title">Cards Added from This Set</div>
+      <div id="set-cards">${renderSetCards()}</div>
+    </div>`;
+
+  window._qty = 1;
+}
+
+let _qty = 1;
+function changeQty(delta) {
+  _qty = Math.max(1, (_qty || 1) + delta);
+  document.getElementById('qty-display').textContent = _qty;
+}
+
+function selectType(type) {
+  selectedType = type;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.textContent === type));
+}
+
+function addToList() {
+  const sel = document.getElementById('card-select');
+  const manualInput = document.getElementById('card-search-input');
+  let name = '', number = '', cardPrice = '';
+
+  if (sel) {
+    if (!sel.value) { alert('Please select a card'); return; }
+    const parts = sel.value.split('|');
+    name = sel.options[sel.selectedIndex].text.split(' · ')[0];
+    number = parts[0];
+    cardPrice = parts[3] || '';
+  } else if (manualInput) {
+    name = manualInput.value.trim();
+    number = document.getElementById('card-number-manual') ? document.getElementById('card-number-manual').value.trim() : '';
+    if (!name) { alert('Please enter a card name'); return; }
+  }
+
+  const notes = document.getElementById('card-notes') ? document.getElementById('card-notes').value.trim() : '';
+  wantList.push({
+    id: Date.now(),
+    setId: selectedSet.id,
+    setName: selectedSet.name,
+    cardName: name,
+    cardNumber: number,
+    cardType: selectedType,
+    price: cardPrice,
+    quantity: _qty || 1,
+  });
+  saveWantList();
+  if (sel) sel.value = '';
+  window._selectedCardNumber = '';
+  _qty = 1;
+  document.getElementById('qty-display').textContent = '1';
+  document.getElementById('set-cards').innerHTML = renderSetCards();
+}
+
+function renderSetCards() {
+  const cards = wantList.filter(c => c.setId === selectedSet.id);
+  if (!cards.length) return '<div class="empty">No cards added from this set yet</div>';
+  return cards.map(c => `
+    <div class="want-item">
+      <div class="want-item-info">
+        <div class="want-item-name">${c.cardName} ${c.cardNumber ? '· ' + c.cardNumber : ''}</div>
+        <div class="want-item-meta">x${c.quantity} · <span class="want-badge ${TYPE_BADGE[c.cardType] || 'badge-common'}">${c.cardType}</span>${c.price ? ' · <span style="color:var(--green);font-weight:600;">' + (c.price === 'POA' ? 'Price on request' : c.price + (c.quantity > 1 ? ' each' : '')) + '</span>' : ''}</div>
+      </div>
+      <button class="btn-sm" onclick="removeFromList(${c.id})" style="color:var(--red);border-color:rgba(232,0,29,0.3);">✕</button>
+    </div>`).join('');
+}
+
+function removeFromList(id) {
+  wantList = wantList.filter(c => c.id !== id);
+  saveWantList();
+  if (selectedSet) document.getElementById('set-cards').innerHTML = renderSetCards();
+  if (currentPage === 'list') renderList();
+}
+
+// ── MY LIST ──
+function renderList() {
+  if (!wantList.length) {
+    document.getElementById('app').innerHTML = `
+      <div class="section" style="text-align:center;padding:30px;">
+        <div style="font-size:32px;margin-bottom:12px;">📋</div>
+        <div style="font-weight:600;margin-bottom:6px;">Your want list is empty</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Browse sets and add the cards you need</div>
+        <button class="btn" onclick="showPage('browse')">Browse Sets</button>
+      </div>`;
+    return;
+  }
+
+  const sets = [...new Set(wantList.map(c => c.setId))];
+  document.getElementById('app').innerHTML = `
+    <div class="section" style="margin-bottom:12px;background:rgba(0,208,132,0.05);border-color:rgba(0,208,132,0.2);">
+      <div style="font-size:13px;color:var(--green);font-weight:600;margin-bottom:4px;">✅ ${wantList.length} card${wantList.length !== 1 ? 's' : ''} on your list</div>
+      <div style="font-size:12px;color:var(--muted);">When you're ready, submit your list and we'll check our stock and get back to you.</div>
+    </div>
+    ${sets.map(setId => {
+      const setCards = wantList.filter(c => c.setId === setId);
+      const setName = setCards[0].setName;
+      return `<div class="section" style="margin-bottom:10px;">
+        <div class="section-title">${setName}</div>
+        ${setCards.map(c => `
+          <div class="want-item">
+            <div class="want-item-info">
+              <div class="want-item-name">${c.cardName} ${c.cardNumber ? '· ' + c.cardNumber : ''}</div>
+              <div class="want-item-meta">x${c.quantity} · <span class="want-badge ${TYPE_BADGE[c.cardType] || 'badge-common'}">${c.cardType}</span>${c.price ? ' · <span style="color:var(--green);font-weight:600;">' + (c.price === 'POA' ? 'Price on request' : c.price + (c.quantity > 1 ? ' each' : '')) + '</span>' : ''}</div>
+            </div>
+            <button class="btn-sm" onclick="removeFromList(${c.id})" style="color:var(--red);border-color:rgba(232,0,29,0.3);">✕</button>
+          </div>`).join('')}
+      </div>`;
+    }).join('')}
+    <div class="field">
+      <label>Additional Notes (optional)</label>
+      <textarea id="submission-notes" placeholder="Any other info — budget, condition preferences, urgency..."></textarea>
+    </div>
+    <button class="btn" onclick="submitList()">Submit Want List →</button>
+    <button class="btn-secondary" onclick="clearList()" style="width:100%;margin-top:8px;">Clear List</button>`;
+}
+
+async function submitList() {
+  if (!wantList.length) return;
+  const notes = document.getElementById('submission-notes') ? document.getElementById('submission-notes').value.trim() : '';
+  try {
+    const res = await db('POST', 'want_requests', {
+      customer_id: currentUser.id,
+      customer_name: currentUser.name,
+      customer_phone: currentUser.phone,
+      customer_email: currentUser.email,
+      cards: JSON.stringify(wantList),
+      notes,
+      status: 'pending',
+      submitted_at: new Date().toISOString(),
+    });
+
+    // WhatsApp notification
+    const totalCards = wantList.reduce((sum, c) => sum + c.quantity, 0);
+    const sets = [...new Set(wantList.map(c => c.setName))].join(', ');
+    const msg = '📋 NEW WANT LIST from ' + currentUser.name + ' (' + (currentUser.phone || currentUser.email) + ')\n\n' + totalCards + ' cards across: ' + sets + '\n\nCheck the admin app to review and respond.';
+    window.open('https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
+
+    wantList = [];
+    saveWantList();
+    document.getElementById('app').innerHTML = `
+      <div class="section" style="text-align:center;padding:30px;">
+        <div style="font-size:40px;margin-bottom:12px;">🎉</div>
+        <div style="font-weight:700;font-size:18px;margin-bottom:8px;">Want List Submitted!</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">We'll check our stock and get back to you as soon as possible. Keep an eye on your Requests tab.</div>
+        <button class="btn" onclick="showPage('browse')">Browse More Sets</button>
+      </div>`;
+  } catch(e) { alert('Error submitting. Please try again.'); }
+}
+
+function clearList() {
+  if (confirm('Clear your entire want list?')) { wantList = []; saveWantList(); renderList(); }
+}
+
+// ── REQUESTS ──
+async function renderRequests() {
+  document.getElementById('app').innerHTML = '<div class="empty">Loading...</div>';
+  try {
+    const requests = await db('GET', 'want_requests', null, `?customer_id=eq.${currentUser.id}&order=submitted_at.desc`);
+    if (!requests || !requests.length) {
+      document.getElementById('app').innerHTML = `
+        <div class="section" style="text-align:center;padding:30px;">
+          <div style="font-size:32px;margin-bottom:12px;">📦</div>
+          <div style="font-weight:600;margin-bottom:6px;">No requests yet</div>
+          <div style="font-size:13px;color:var(--muted);">Submit your want list and it will appear here.</div>
+        </div>`;
+      return;
+    }
+    document.getElementById('app').innerHTML = requests.map(r => {
+      const cards = JSON.parse(r.cards || '[]');
+      const date = new Date(r.submitted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      const statusColor = r.status === 'responded' ? 'var(--green)' : r.status === 'declined' ? 'var(--red)' : 'var(--amber)';
+      const statusLabel = r.status === 'responded' ? '✅ Responded' : r.status === 'declined' ? '❌ Declined' : '⏳ Pending';
+      return `<div class="section" style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="font-size:12px;color:var(--muted);">${date} · ${cards.length} card${cards.length !== 1 ? 's' : ''}</div>
+          <div style="font-size:12px;font-weight:700;color:${statusColor};">${statusLabel}</div>
+        </div>
+        ${cards.slice(0,3).map(c => `
+          <div style="font-size:12px;color:var(--muted);padding:3px 0;border-bottom:1px solid var(--border);">${c.cardName} · ${c.setName} · <span class="want-badge ${TYPE_BADGE[c.cardType] || 'badge-common'}">${c.cardType}</span></div>`).join('')}
+        ${cards.length > 3 ? `<div style="font-size:11px;color:var(--muted);margin-top:6px;">+${cards.length - 3} more cards</div>` : ''}
+        ${r.response ? `<div style="margin-top:10px;background:rgba(0,208,132,0.08);border:1px solid rgba(0,208,132,0.2);border-radius:8px;padding:10px;font-size:13px;">${r.response}</div>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e) { document.getElementById('app').innerHTML = '<div class="empty">Error loading requests</div>'; }
+}
+
+// ── HARDCODED CARD DATA FOR SETS NOT YET IN API ──
+const HARDCODED_SETS = {
+  'ascended-heroes': [
+    {name:"Erika's Oddish",number:"1",rarity:"Common"},{name:"Erika's Gloom",number:"2",rarity:"Common"},{name:"Erika's Vileplume ex",number:"3",rarity:"Double Rare"},{name:"Erika's Bellsprout",number:"4",rarity:"Common"},{name:"Erika's Weepinbell",number:"5",rarity:"Common"},{name:"Erika's Victreebel",number:"6",rarity:"Rare Holo"},{name:"Erika's Tangela",number:"7",rarity:"Common"},{name:"Chikorita",number:"8",rarity:"Common"},{name:"Bayleef",number:"9",rarity:"Uncommon"},{name:"Mega Meganium ex",number:"10",rarity:"Double Rare"},{name:"Wurmple",number:"11",rarity:"Common"},{name:"Silcoon",number:"12",rarity:"Common"},{name:"Beautifly",number:"13",rarity:"Uncommon"},{name:"Cascoon",number:"14",rarity:"Common"},{name:"Dustox",number:"15",rarity:"Uncommon"},{name:"Budew",number:"16",rarity:"Common"},{name:"Grubbin",number:"17",rarity:"Common"},{name:"Team Rocket's Tarountula",number:"18",rarity:"Common"},{name:"Team Rocket's Spidops",number:"19",rarity:"Uncommon"},{name:"Charmander",number:"20",rarity:"Common"},{name:"Charmeleon",number:"21",rarity:"Uncommon"},{name:"Mega Charizard Y ex",number:"22",rarity:"Double Rare"},{name:"Ethan's Slugma",number:"23",rarity:"Common"},{name:"Ethan's Magcargo",number:"24",rarity:"Uncommon"},{name:"Entei",number:"25",rarity:"Rare Holo"},{name:"Ethan's Ho-Oh ex",number:"26",rarity:"Double Rare"},{name:"Numel",number:"27",rarity:"Common"},{name:"Camerupt",number:"28",rarity:"Uncommon"},{name:"Tepig",number:"29",rarity:"Common"},{name:"Pignite",number:"30",rarity:"Uncommon"},{name:"Mega Emboar ex",number:"31",rarity:"Double Rare"},{name:"N's Darumaka",number:"32",rarity:"Common"},{name:"N's Darmanitan",number:"33",rarity:"Uncommon"},{name:"Salandit",number:"34",rarity:"Common"},{name:"Salazzle",number:"35",rarity:"Uncommon"},{name:"Scorbunny",number:"36",rarity:"Common"},{name:"Raboot",number:"37",rarity:"Uncommon"},{name:"Cinderace ex",number:"38",rarity:"Double Rare"},{name:"Psyduck",number:"39",rarity:"Common"},{name:"Golduck",number:"40",rarity:"Uncommon"},{name:"Totodile",number:"41",rarity:"Common"},{name:"Croconaw",number:"42",rarity:"Uncommon"},{name:"Mega Feraligatr ex",number:"43",rarity:"Double Rare"},{name:"Sneasel",number:"44",rarity:"Common"},{name:"Weavile",number:"45",rarity:"Uncommon"},{name:"Snorunt",number:"46",rarity:"Common"},{name:"Mega Froslass ex",number:"47",rarity:"Double Rare"},{name:"Regice ex",number:"48",rarity:"Double Rare"},{name:"N's Vanillite",number:"49",rarity:"Common"},{name:"N's Vanillish",number:"50",rarity:"Uncommon"},{name:"N's Vanilluxe",number:"51",rarity:"Rare Holo"},{name:"Snom",number:"52",rarity:"Common"},{name:"Frosmoth",number:"53",rarity:"Uncommon"},{name:"Glastrier",number:"54",rarity:"Rare Holo"},{name:"Pikachu",number:"55",rarity:"Common"},{name:"Raichu",number:"56",rarity:"Uncommon"},{name:"Pikachu ex",number:"57",rarity:"Double Rare"},{name:"Voltorb ex",number:"58",rarity:"Double Rare"},{name:"Tynamo",number:"59",rarity:"Common"},{name:"Eelektrik",number:"60",rarity:"Uncommon"},{name:"Mega Eelektross ex",number:"61",rarity:"Double Rare"},{name:"Stunfisk",number:"62",rarity:"Common"},{name:"Helioptile",number:"63",rarity:"Common"},{name:"Heliolisk",number:"64",rarity:"Uncommon"},{name:"Charjabug",number:"65",rarity:"Common"},{name:"Vikavolt",number:"66",rarity:"Uncommon"},{name:"Tapu Koko",number:"67",rarity:"Rare Holo"},{name:"Hop's Pincurchin ex",number:"68",rarity:"Double Rare"},{name:"Iono's Tadbulb",number:"69",rarity:"Common"},{name:"Iono's Bellibolt ex",number:"70",rarity:"Double Rare"},{name:"Mankey",number:"71",rarity:"Common"},{name:"Primeape",number:"72",rarity:"Uncommon"},{name:"Mega Alakazam ex",number:"73",rarity:"Double Rare"},{name:"Misdreavus",number:"74",rarity:"Common"},{name:"Mismagius",number:"75",rarity:"Uncommon"},{name:"Gengar ex",number:"76",rarity:"Double Rare"},{name:"Mega Gengar ex",number:"77",rarity:"Double Rare"},{name:"Gastly",number:"78",rarity:"Common"},{name:"Haunter",number:"79",rarity:"Uncommon"},{name:"Shuppet",number:"80",rarity:"Common"},{name:"Banette ex",number:"81",rarity:"Double Rare"},{name:"Drifloon",number:"82",rarity:"Common"},{name:"Drifblim",number:"83",rarity:"Uncommon"},{name:"Gothita",number:"84",rarity:"Common"},{name:"Gothorita",number:"85",rarity:"Uncommon"},{name:"Gothitelle",number:"86",rarity:"Rare Holo"},{name:"Mimikyu",number:"87",rarity:"Uncommon"},{name:"Greavard",number:"88",rarity:"Common"},{name:"Houndstone ex",number:"89",rarity:"Double Rare"},{name:"Poliwag",number:"90",rarity:"Common"},{name:"Poliwhirl",number:"91",rarity:"Common"},{name:"Mega Poliwrath ex",number:"92",rarity:"Double Rare"},{name:"Onix",number:"93",rarity:"Common"},{name:"Steelix",number:"94",rarity:"Uncommon"},{name:"Larvitar",number:"95",rarity:"Common"},{name:"Pupitar",number:"96",rarity:"Uncommon"},{name:"Tyranitar ex",number:"97",rarity:"Double Rare"},{name:"Regirock ex",number:"98",rarity:"Double Rare"},{name:"Cynthia's Gible",number:"99",rarity:"Common"},{name:"Cynthia's Gabite",number:"100",rarity:"Common"},{name:"Cynthia's Garchomp ex",number:"101",rarity:"Double Rare"},{name:"Axew",number:"102",rarity:"Common"},{name:"Fraxure",number:"103",rarity:"Uncommon"},{name:"Mega Haxorus ex",number:"104",rarity:"Double Rare"},{name:"Dratini",number:"105",rarity:"Common"},{name:"Dragonair",number:"106",rarity:"Uncommon"},{name:"Mega Dragonite ex",number:"107",rarity:"Double Rare"},{name:"Gible",number:"108",rarity:"Common"},{name:"Gabite",number:"109",rarity:"Uncommon"},{name:"Garchomp ex",number:"110",rarity:"Double Rare"},{name:"Falinks ex",number:"111",rarity:"Double Rare"},{name:"Diglett",number:"112",rarity:"Common"},{name:"Dugtrio",number:"113",rarity:"Uncommon"},{name:"Team Rocket's Dugtrio",number:"114",rarity:"Rare Holo"},{name:"Geodude",number:"115",rarity:"Common"},{name:"Graveler",number:"116",rarity:"Uncommon"},{name:"Mega Golem ex",number:"117",rarity:"Double Rare"},{name:"Wooper",number:"118",rarity:"Common"},{name:"Quagsire",number:"119",rarity:"Uncommon"},{name:"Aron",number:"120",rarity:"Common"},{name:"Lairon",number:"121",rarity:"Uncommon"},{name:"Mega Aggron ex",number:"122",rarity:"Double Rare"},{name:"Beldum",number:"123",rarity:"Common"},{name:"Metang",number:"124",rarity:"Uncommon"},{name:"Mega Metagross ex",number:"125",rarity:"Double Rare"},{name:"Registeel ex",number:"126",rarity:"Double Rare"},{name:"Bisharp",number:"127",rarity:"Uncommon"},{name:"Steven's Beldum",number:"128",rarity:"Common"},{name:"Steven's Metang",number:"129",rarity:"Common"},{name:"Steven's Metagross ex",number:"130",rarity:"Double Rare"},{name:"Mega Lucario ex",number:"131",rarity:"Double Rare"},{name:"Hawlucha",number:"132",rarity:"Common"},{name:"Mega Gardevoir ex",number:"133",rarity:"Double Rare"},{name:"Ralts",number:"134",rarity:"Common"},{name:"Kirlia",number:"135",rarity:"Uncommon"},{name:"Mega Gallade ex",number:"136",rarity:"Double Rare"},{name:"Mime Jr.",number:"137",rarity:"Common"},{name:"Mr. Mime",number:"138",rarity:"Uncommon"},{name:"Lillie's Clefairy ex",number:"139",rarity:"Double Rare"},{name:"Eevee",number:"140",rarity:"Common"},{name:"Sylveon ex",number:"141",rarity:"Double Rare"},{name:"Togekiss ex",number:"142",rarity:"Double Rare"},{name:"Marnie's Morpeko",number:"143",rarity:"Uncommon"},{name:"Marnie's Grimmsnarl ex",number:"144",rarity:"Double Rare"},{name:"Oddish",number:"145",rarity:"Common"},{name:"Gloom",number:"146",rarity:"Uncommon"},{name:"Vileplume",number:"147",rarity:"Rare Holo"},{name:"Snorlax",number:"148",rarity:"Uncommon"},{name:"Munchlax",number:"149",rarity:"Common"},{name:"N's Zorua",number:"150",rarity:"Common"},{name:"N's Zoroark ex",number:"151",rarity:"Double Rare"},{name:"Bunnelby",number:"152",rarity:"Common"},{name:"Diggersby",number:"153",rarity:"Uncommon"},{name:"Yungoos",number:"154",rarity:"Common"},{name:"Gumshoos ex",number:"155",rarity:"Double Rare"},{name:"Hop's Zacian ex",number:"156",rarity:"Double Rare"},{name:"Lugia ex",number:"157",rarity:"Double Rare"},{name:"Regigigas ex",number:"158",rarity:"Double Rare"},{name:"Arceus ex",number:"159",rarity:"Double Rare"},{name:"Team Rocket's Persian ex",number:"160",rarity:"Double Rare"},{name:"Team Rocket's Mewtwo ex",number:"161",rarity:"Double Rare"},{name:"Giovanni",number:"162",rarity:"Uncommon"},{name:"Erika",number:"163",rarity:"Uncommon"},{name:"N",number:"164",rarity:"Uncommon"},{name:"Hop",number:"165",rarity:"Uncommon"},{name:"Lillie",number:"166",rarity:"Uncommon"},{name:"Iono",number:"167",rarity:"Uncommon"},{name:"Cynthia",number:"168",rarity:"Uncommon"},{name:"Steven",number:"169",rarity:"Uncommon"},{name:"Arven's Mabosstiff ex",number:"170",rarity:"Double Rare"},{name:"Team Rocket's Poké Ball",number:"171",rarity:"Uncommon"},{name:"Nest Ball",number:"172",rarity:"Common"},{name:"Ultra Ball",number:"173",rarity:"Uncommon"},{name:"Rare Candy",number:"174",rarity:"Uncommon"},{name:"Energy Retrieval",number:"175",rarity:"Common"},{name:"Switch",number:"176",rarity:"Common"},{name:"Professor's Research",number:"177",rarity:"Uncommon"},{name:"Boss's Orders",number:"178",rarity:"Uncommon"},{name:"Counter Catcher",number:"179",rarity:"Uncommon"},{name:"Team Rocket's Rocket",number:"180",rarity:"Rare Holo"},{name:"Mega Turbo",number:"181",rarity:"Uncommon"},{name:"Larry's Mega Evolution Band",number:"182",rarity:"Uncommon"},{name:"Arven",number:"183",rarity:"Uncommon"},{name:"Larry",number:"184",rarity:"Uncommon"},{name:"Grass Energy",number:"185",rarity:"Common"},{name:"Fire Energy",number:"186",rarity:"Common"},{name:"Water Energy",number:"187",rarity:"Common"},{name:"Lightning Energy",number:"188",rarity:"Common"},{name:"Psychic Energy",number:"189",rarity:"Common"},{name:"Fighting Energy",number:"190",rarity:"Common"},{name:"Darkness Energy",number:"191",rarity:"Common"},{name:"Metal Energy",number:"192",rarity:"Common"},{name:"Double Turbo Energy",number:"193",rarity:"Uncommon"},{name:"Stellar Energy",number:"194",rarity:"Uncommon"},{name:"Jet Energy",number:"195",rarity:"Uncommon"},{name:"Therapeutic Energy",number:"196",rarity:"Uncommon"},{name:"Gift Energy",number:"197",rarity:"Uncommon"},
+    // Base set cards 198-217
+    {name:"Team Rocket's Ariana",number:"198",rarity:"Uncommon"},{name:"Team Rocket's Factory",number:"199",rarity:"Uncommon"},{name:"Team Rocket's Giovanni",number:"200",rarity:"Uncommon"},{name:"Team Rocket's Great Ball",number:"201",rarity:"Uncommon"},{name:"Team Rocket's Hypnotizer",number:"202",rarity:"Uncommon"},{name:"Team Rocket's Petrel",number:"203",rarity:"Uncommon"},{name:"Team Rocket's Proton",number:"204",rarity:"Uncommon"},{name:"Team Rocket's Transceiver",number:"205",rarity:"Uncommon"},{name:"Team Rocket's Watchtower",number:"206",rarity:"Uncommon"},{name:"Thick Scale",number:"207",rarity:"Uncommon"},{name:"Tool Scrapper",number:"208",rarity:"Common"},{name:"Ultra Ball",number:"209",rarity:"Common"},{name:"Urbain",number:"210",rarity:"Uncommon"},{name:"Waitress",number:"211",rarity:"Common"},{name:"Prism Energy",number:"212",rarity:"Uncommon"},{name:"Team Rocket's Energy",number:"213",rarity:"Uncommon"},
+    // Secret Rares - Illustration Rares (218-250)
+    {name:"Erika's Tangela",number:"218",rarity:"Illustration Rare"},{name:"Beautifly",number:"219",rarity:"Illustration Rare"},{name:"Dustox",number:"220",rarity:"Illustration Rare"},{name:"Budew",number:"221",rarity:"Illustration Rare"},{name:"Ethan's Magcargo",number:"222",rarity:"Illustration Rare"},{name:"Numel",number:"223",rarity:"Illustration Rare"},{name:"Salazzle",number:"224",rarity:"Illustration Rare"},{name:"Scorbunny",number:"225",rarity:"Illustration Rare"},{name:"Psyduck",number:"226",rarity:"Illustration Rare"},{name:"Snorunt",number:"227",rarity:"Illustration Rare"},{name:"Weavile",number:"228",rarity:"Illustration Rare"},{name:"Heliolisk",number:"229",rarity:"Illustration Rare"},{name:"Vikavolt",number:"230",rarity:"Illustration Rare"},{name:"Iono's Wattrel",number:"231",rarity:"Illustration Rare"},{name:"Marill",number:"232",rarity:"Illustration Rare"},{name:"Misdreavus",number:"233",rarity:"Illustration Rare"},{name:"Banette",number:"234",rarity:"Illustration Rare"},{name:"Togekiss",number:"235",rarity:"Illustration Rare"},{name:"Slurpuff",number:"236",rarity:"Illustration Rare"},{name:"Hop's Trevenant",number:"237",rarity:"Illustration Rare"},{name:"Team Rocket's Mimikyu",number:"238",rarity:"Illustration Rare"},{name:"Team Rocket's Dugtrio",number:"239",rarity:"Illustration Rare"},{name:"Hitmontop",number:"240",rarity:"Illustration Rare"},{name:"Medicham",number:"241",rarity:"Illustration Rare"},{name:"Carbink",number:"242",rarity:"Illustration Rare"},{name:"Mightyena",number:"243",rarity:"Illustration Rare"},{name:"Cynthia's Spiritomb",number:"244",rarity:"Illustration Rare"},{name:"Galarian Obstagoon",number:"245",rarity:"Illustration Rare"},{name:"Mawile",number:"246",rarity:"Illustration Rare"},{name:"Dreepy",number:"247",rarity:"Illustration Rare"},{name:"Drakloak",number:"248",rarity:"Illustration Rare"},{name:"Larry's Staraptor",number:"249",rarity:"Illustration Rare"},{name:"Fan Rotom",number:"250",rarity:"Illustration Rare"},
+    // Secret Rares - Ultra Rares (251-264)
+    {name:"Sprigatito ex",number:"251",rarity:"Rare Ultra"},{name:"Stunfisk ex",number:"252",rarity:"Rare Ultra"},{name:"Mega Audino ex",number:"253",rarity:"Rare Ultra"},{name:"Anthea & Concordia",number:"254",rarity:"Rare Ultra"},{name:"Black Belt's Training",number:"255",rarity:"Rare Ultra"},{name:"Boss's Orders (Corbeau)",number:"256",rarity:"Rare Ultra"},{name:"Canari",number:"257",rarity:"Rare Ultra"},{name:"Cheren",number:"258",rarity:"Rare Ultra"},{name:"Counter Gain",number:"259",rarity:"Rare Ultra"},{name:"Glass Trumpet",number:"260",rarity:"Rare Ultra"},{name:"Jamming Tower",number:"261",rarity:"Rare Ultra"},{name:"N's PP Up",number:"262",rarity:"Rare Ultra"},{name:"Team Rocket's Transceiver",number:"263",rarity:"Rare Ultra"},{name:"Ultra Ball",number:"264",rarity:"Rare Ultra"},
+    // Secret Rares - Mega Attack Rares (265-271)
+    {name:"Mega Froslass ex",number:"265",rarity:"Mega Hyper Rare"},{name:"Mega Eelektross ex",number:"266",rarity:"Mega Hyper Rare"},{name:"Mega Diancie ex",number:"267",rarity:"Mega Hyper Rare"},{name:"Mega Hawlucha ex",number:"268",rarity:"Mega Hyper Rare"},{name:"Mega Gengar ex",number:"269",rarity:"Mega Hyper Rare"},{name:"Mega Scrafty ex",number:"270",rarity:"Mega Hyper Rare"},{name:"Mega Dragonite ex",number:"271",rarity:"Mega Hyper Rare"},
+    // Secret Rares - Special Illustration Rares (272-293)
+    {name:"Mega Meganium ex",number:"272",rarity:"Special Illustration Rare"},{name:"Mega Emboar ex",number:"273",rarity:"Special Illustration Rare"},{name:"Mega Feraligatr ex",number:"274",rarity:"Special Illustration Rare"},{name:"Mega Froslass ex",number:"275",rarity:"Special Illustration Rare"},{name:"Pikachu ex",number:"276",rarity:"Special Illustration Rare"},{name:"Pikachu ex",number:"277",rarity:"Special Illustration Rare"},{name:"Mega Eelektross ex",number:"278",rarity:"Special Illustration Rare"},{name:"Iono's Bellibolt ex",number:"279",rarity:"Special Illustration Rare"},{name:"Lillie's Clefairy ex",number:"280",rarity:"Special Illustration Rare"},{name:"Team Rocket's Mewtwo ex",number:"281",rarity:"Special Illustration Rare"},{name:"Mega Diancie ex",number:"282",rarity:"Special Illustration Rare"},{name:"Mega Hawlucha ex",number:"283",rarity:"Special Illustration Rare"},{name:"Mega Gengar ex",number:"284",rarity:"Special Illustration Rare"},{name:"Mega Scrafty ex",number:"285",rarity:"Special Illustration Rare"},{name:"N's Zoroark ex",number:"286",rarity:"Special Illustration Rare"},{name:"Marnie's Grimmsnarl ex",number:"287",rarity:"Special Illustration Rare"},{name:"Fezandipiti ex",number:"288",rarity:"Special Illustration Rare"},{name:"Steven's Metagross ex",number:"289",rarity:"Special Illustration Rare"},{name:"Mega Dragonite ex",number:"290",rarity:"Special Illustration Rare"},{name:"Iris's Fighting Spirit",number:"291",rarity:"Special Illustration Rare"},{name:"Canari",number:"292",rarity:"Special Illustration Rare"},{name:"Surfer",number:"293",rarity:"Special Illustration Rare"},
+    // Hyper Rares (294-295)
+    {name:"Mega Charizard Y ex",number:"294",rarity:"Mega Hyper Rare"},{name:"Mega Dragonite ex",number:"295",rarity:"Mega Hyper Rare"},
+  ],
+  'chaos-rising': [
+    {name:"Weedle",number:"1",rarity:"Common"},{name:"Kakuna",number:"2",rarity:"Common"},{name:"Beedrill ex",number:"3",rarity:"Double Rare"},{name:"Carnivine",number:"4",rarity:"Uncommon"},{name:"Chespin",number:"5",rarity:"Common"},{name:"Quilladin",number:"6",rarity:"Uncommon"},{name:"Chesnaught",number:"7",rarity:"Rare Holo"},{name:"Vulpix",number:"8",rarity:"Common"},{name:"Ninetales",number:"9",rarity:"Uncommon"},{name:"Ho-Oh",number:"10",rarity:"Rare Holo"},{name:"Fennekin",number:"11",rarity:"Common"},{name:"Braixen",number:"12",rarity:"Uncommon"},{name:"Delphox",number:"13",rarity:"Rare Holo"},{name:"Litleo",number:"14",rarity:"Common"},{name:"Mega Pyroar ex",number:"15",rarity:"Double Rare"},{name:"Remoraid",number:"16",rarity:"Common"},{name:"Octillery",number:"17",rarity:"Uncommon"},{name:"Delibird",number:"18",rarity:"Common"},{name:"Keldeo",number:"19",rarity:"Rare Holo"},{name:"Froakie",number:"20",rarity:"Common"},{name:"Frogadier",number:"21",rarity:"Uncommon"},{name:"Mega Greninja ex",number:"22",rarity:"Double Rare"},{name:"Bergmite",number:"23",rarity:"Common"},{name:"Avalugg",number:"24",rarity:"Uncommon"},{name:"Wimpod",number:"25",rarity:"Common"},{name:"Golisopod",number:"26",rarity:"Uncommon"},{name:"Mareep",number:"27",rarity:"Common"},{name:"Flaaffy",number:"28",rarity:"Uncommon"},{name:"Ampharos",number:"29",rarity:"Rare Holo"},{name:"Emolga",number:"30",rarity:"Common"},{name:"Deoxys",number:"31",rarity:"Rare Holo"},{name:"Deoxys",number:"32",rarity:"Rare Holo"},{name:"Deoxys",number:"33",rarity:"Rare Holo"},{name:"Deoxys",number:"34",rarity:"Rare Holo"},{name:"Mega Floette ex",number:"35",rarity:"Double Rare"},{name:"Espurr",number:"36",rarity:"Common"},{name:"Meowstic",number:"37",rarity:"Uncommon"},{name:"Phantump",number:"38",rarity:"Common"},{name:"Trevenant",number:"39",rarity:"Uncommon"},{name:"Pumpkaboo",number:"40",rarity:"Common"},{name:"Gourgeist ex",number:"41",rarity:"Double Rare"},{name:"Xerneas",number:"42",rarity:"Rare Holo"},{name:"Sudowoodo",number:"43",rarity:"Common"},{name:"Phanpy",number:"44",rarity:"Common"},{name:"Donphan",number:"45",rarity:"Uncommon"},{name:"Baltoy",number:"46",rarity:"Common"},{name:"Claydol",number:"47",rarity:"Uncommon"},{name:"Mega Gallade ex",number:"48",rarity:"Double Rare"},{name:"Zubat",number:"49",rarity:"Common"},{name:"Golbat",number:"50",rarity:"Uncommon"},{name:"Crobat",number:"51",rarity:"Rare Holo"},{name:"Qwilfish",number:"52",rarity:"Common"},{name:"Stunky",number:"53",rarity:"Common"},{name:"Skuntank",number:"54",rarity:"Uncommon"},{name:"Krookodile ex",number:"55",rarity:"Double Rare"},{name:"Trubbish",number:"56",rarity:"Common"},{name:"Garbodor",number:"57",rarity:"Uncommon"},{name:"Skrelp",number:"58",rarity:"Common"},{name:"Beldum",number:"59",rarity:"Common"},{name:"Metang",number:"60",rarity:"Uncommon"},{name:"Metagross",number:"61",rarity:"Rare Holo"},{name:"Ferroseed",number:"62",rarity:"Common"},{name:"Ferrothorn",number:"63",rarity:"Uncommon"},{name:"Cobalion ex",number:"64",rarity:"Double Rare"},{name:"Mega Dragalge ex",number:"65",rarity:"Double Rare"},{name:"Goomy",number:"66",rarity:"Common"},{name:"Sliggoo",number:"67",rarity:"Uncommon"},{name:"Goodra",number:"68",rarity:"Rare Holo"},{name:"Tauros",number:"69",rarity:"Common"},{name:"Patrat",number:"70",rarity:"Common"},{name:"Watchog",number:"71",rarity:"Uncommon"},{name:"Minccino",number:"72",rarity:"Common"},{name:"Cinccino ex",number:"73",rarity:"Double Rare"},{name:"Adversity Policy",number:"74",rarity:"Uncommon"},{name:"Ange Floette",number:"75",rarity:"Uncommon"},{name:"AZ's Tranquility",number:"76",rarity:"Uncommon"},{name:"Emma",number:"77",rarity:"Uncommon"},{name:"Great Haul Net",number:"78",rarity:"Uncommon"},{name:"Philippa",number:"79",rarity:"Uncommon"},{name:"Professor's Research",number:"80",rarity:"Uncommon"},{name:"Rare Candy",number:"81",rarity:"Uncommon"},{name:"Switch",number:"82",rarity:"Common"},{name:"Ultra Ball",number:"83",rarity:"Uncommon"},{name:"Grass Energy",number:"84",rarity:"Common"},{name:"Water Energy",number:"85",rarity:"Common"},{name:"Metal Energy",number:"86",rarity:"Common"},
+    {name:"Chespin",number:"87",rarity:"Illustration Rare"},{name:"Froakie",number:"88",rarity:"Illustration Rare"},{name:"Frogadier",number:"89",rarity:"Illustration Rare"},{name:"Ampharos",number:"90",rarity:"Illustration Rare"},{name:"Xerneas",number:"91",rarity:"Illustration Rare"},{name:"Claydol",number:"92",rarity:"Illustration Rare"},{name:"Crobat",number:"93",rarity:"Illustration Rare"},{name:"Metang",number:"94",rarity:"Illustration Rare"},{name:"Sliggoo",number:"95",rarity:"Illustration Rare"},{name:"Tauros",number:"96",rarity:"Illustration Rare"},{name:"Watchog",number:"97",rarity:"Illustration Rare"},{name:"Beedrill ex",number:"98",rarity:"Rare Ultra"},{name:"Mega Pyroar ex",number:"99",rarity:"Rare Ultra"},{name:"Mega Greninja ex",number:"100",rarity:"Rare Ultra"},{name:"Mega Floette ex",number:"101",rarity:"Rare Ultra"},{name:"Gourgeist ex",number:"102",rarity:"Rare Ultra"},{name:"Cobalion ex",number:"103",rarity:"Rare Ultra"},{name:"Mega Dragalge ex",number:"104",rarity:"Rare Ultra"},{name:"Cinccino ex",number:"105",rarity:"Rare Ultra"},{name:"AZ's Tranquility",number:"106",rarity:"Rare Ultra"},{name:"Emma",number:"107",rarity:"Rare Ultra"},{name:"Energy Retrieval",number:"108",rarity:"Rare Ultra"},{name:"Jumbo Ice Cream",number:"109",rarity:"Rare Ultra"},{name:"Philippe",number:"110",rarity:"Rare Ultra"},{name:"Prism Tower",number:"111",rarity:"Rare Ultra"},{name:"Roxie's Performance",number:"112",rarity:"Rare Ultra"},{name:"Special Red Card",number:"113",rarity:"Rare Ultra"},{name:"Surfing Beach",number:"114",rarity:"Rare Ultra"},{name:"Tool Scrapper",number:"115",rarity:"Rare Ultra"},{name:"Mega Greninja ex",number:"116",rarity:"Special Illustration Rare"},{name:"Mega Floette ex",number:"117",rarity:"Special Illustration Rare"},{name:"Mega Dragalge ex",number:"118",rarity:"Special Illustration Rare"},{name:"Cinccino ex",number:"119",rarity:"Special Illustration Rare"},{name:"AZ's Tranquility",number:"120",rarity:"Special Illustration Rare"},{name:"Roxie's Performance",number:"121",rarity:"Special Illustration Rare"},{name:"Mega Greninja ex",number:"122",rarity:"Mega Hyper Rare"},
+  ],
+  'perfect-order': [
+    {name:"Spinarak",number:"1",rarity:"Common"},{name:"Ariados",number:"2",rarity:"Uncommon"},{name:"Shaymin",number:"3",rarity:"Rare Holo"},{name:"Snivy",number:"4",rarity:"Common"},{name:"Servine",number:"5",rarity:"Uncommon"},{name:"Serperior",number:"6",rarity:"Rare Holo"},{name:"Scatterbug",number:"7",rarity:"Common"},{name:"Spewpa",number:"8",rarity:"Common"},{name:"Vivillon",number:"9",rarity:"Uncommon"},{name:"Rowlet",number:"10",rarity:"Common"},{name:"Dartrix",number:"11",rarity:"Uncommon"},{name:"Decidueye ex",number:"12",rarity:"Double Rare"},{name:"Fletchinder",number:"13",rarity:"Common"},{name:"Talonflame",number:"14",rarity:"Uncommon"},{name:"Salandit",number:"15",rarity:"Common"},{name:"Salazzle ex",number:"16",rarity:"Double Rare"},{name:"Turtonator",number:"17",rarity:"Uncommon"},{name:"Seel",number:"18",rarity:"Common"},{name:"Dewgong",number:"19",rarity:"Uncommon"},{name:"Staryu",number:"20",rarity:"Common"},{name:"Mega Starmie ex",number:"21",rarity:"Double Rare"},{name:"Lapras ex",number:"22",rarity:"Double Rare"},{name:"Amaura",number:"23",rarity:"Common"},{name:"Aurorus",number:"24",rarity:"Rare Holo"},{name:"Volcanion",number:"25",rarity:"Rare Holo"},{name:"Shinx",number:"26",rarity:"Common"},{name:"Luxio",number:"27",rarity:"Uncommon"},{name:"Luxray",number:"28",rarity:"Rare Holo"},{name:"Dedenne",number:"29",rarity:"Common"},{name:"Clefairy",number:"30",rarity:"Common"},{name:"Mega Clefable ex",number:"31",rarity:"Double Rare"},{name:"Mawile",number:"32",rarity:"Uncommon"},{name:"Espurr",number:"33",rarity:"Common"},{name:"Meowstic",number:"34",rarity:"Uncommon"},{name:"Spritzee",number:"35",rarity:"Common"},{name:"Aromatisse",number:"36",rarity:"Uncommon"},{name:"Nosepass",number:"37",rarity:"Common"},{name:"Probopass",number:"38",rarity:"Uncommon"},{name:"Hippopotas",number:"39",rarity:"Common"},{name:"Hippowdon",number:"40",rarity:"Uncommon"},{name:"Landorus",number:"41",rarity:"Rare Holo"},{name:"Binacle",number:"42",rarity:"Common"},{name:"Barbaracle",number:"43",rarity:"Uncommon"},{name:"Tyrunt",number:"44",rarity:"Common"},{name:"Tyrantrum",number:"45",rarity:"Uncommon"},{name:"Hawlucha",number:"46",rarity:"Common"},{name:"Mega Zygarde ex",number:"47",rarity:"Double Rare"},{name:"Gastly",number:"48",rarity:"Common"},{name:"Haunter",number:"49",rarity:"Uncommon"},{name:"Gengar",number:"50",rarity:"Rare Holo"},{name:"Skorupi",number:"51",rarity:"Common"},{name:"Drapion",number:"52",rarity:"Uncommon"},{name:"Yveltal ex",number:"53",rarity:"Double Rare"},{name:"Chien-Pao",number:"54",rarity:"Rare Holo"},{name:"Mega Skarmory ex",number:"55",rarity:"Double Rare"},{name:"Honedge",number:"56",rarity:"Common"},{name:"Doublade",number:"57",rarity:"Uncommon"},{name:"Aegislash",number:"58",rarity:"Rare Holo"},{name:"Klefki",number:"59",rarity:"Uncommon"},{name:"Rattata",number:"60",rarity:"Common"},{name:"Raticate",number:"61",rarity:"Uncommon"},{name:"Meowth ex",number:"62",rarity:"Double Rare"},{name:"Snorlax",number:"63",rarity:"Uncommon"},{name:"Bunnelby",number:"64",rarity:"Common"},{name:"Diggersby",number:"65",rarity:"Uncommon"},{name:"Fletchling",number:"66",rarity:"Common"},{name:"Furfrou",number:"67",rarity:"Uncommon"},{name:"Antique Jaw Fossil",number:"68",rarity:"Common"},{name:"Antique Sail Fossil",number:"69",rarity:"Common"},{name:"Core Memory",number:"70",rarity:"Uncommon"},{name:"Crushing Hammer",number:"71",rarity:"Common"},{name:"Energy Search",number:"72",rarity:"Common"},{name:"Energy Swatter",number:"73",rarity:"Uncommon"},{name:"Hole-Digging Shovel",number:"74",rarity:"Uncommon"},{name:"Jacinthe",number:"75",rarity:"Uncommon"},{name:"Judge",number:"76",rarity:"Uncommon"},{name:"Lumiose City",number:"77",rarity:"Uncommon"},{name:"Lumiose Galette",number:"78",rarity:"Uncommon"},{name:"Naveen",number:"79",rarity:"Uncommon"},{name:"Poké Ball",number:"80",rarity:"Common"},{name:"Rare Candy",number:"81",rarity:"Uncommon"},{name:"Switch",number:"82",rarity:"Common"},{name:"Ultra Ball",number:"83",rarity:"Uncommon"},{name:"Vaniville Town",number:"84",rarity:"Uncommon"},{name:"Fire Energy",number:"85",rarity:"Common"},{name:"Lightning Energy",number:"86",rarity:"Common"},{name:"Psychic Energy",number:"87",rarity:"Common"},{name:"Fighting Energy",number:"88",rarity:"Common"},
+    {name:"Spewpa",number:"89",rarity:"Illustration Rare"},{name:"Rowlet",number:"90",rarity:"Illustration Rare"},{name:"Talonflame",number:"91",rarity:"Illustration Rare"},{name:"Aurorus",number:"92",rarity:"Illustration Rare"},{name:"Dedenne",number:"93",rarity:"Illustration Rare"},{name:"Clefairy",number:"94",rarity:"Illustration Rare"},{name:"Espurr",number:"95",rarity:"Illustration Rare"},{name:"Probopass",number:"96",rarity:"Illustration Rare"},{name:"Drapion",number:"97",rarity:"Illustration Rare"},{name:"Doublade",number:"98",rarity:"Illustration Rare"},{name:"Raticate",number:"99",rarity:"Illustration Rare"},{name:"Decidueye ex",number:"100",rarity:"Rare Ultra"},{name:"Salazzle ex",number:"101",rarity:"Rare Ultra"},{name:"Mega Starmie ex",number:"102",rarity:"Rare Ultra"},{name:"Mega Clefable ex",number:"103",rarity:"Rare Ultra"},{name:"Mega Zygarde ex",number:"104",rarity:"Rare Ultra"},{name:"Yveltal ex",number:"105",rarity:"Rare Ultra"},{name:"Mega Skarmory ex",number:"106",rarity:"Rare Ultra"},{name:"Meowth ex",number:"107",rarity:"Rare Ultra"},{name:"Energy Recycler",number:"108",rarity:"Rare Ultra"},{name:"Forest of Vitality",number:"109",rarity:"Rare Ultra"},{name:"Jacinthe",number:"110",rarity:"Rare Ultra"},{name:"Lumiose City",number:"111",rarity:"Rare Ultra"},{name:"Naveen",number:"112",rarity:"Rare Ultra"},{name:"Poke Pad",number:"113",rarity:"Rare Ultra"},{name:"Rosa's Encouragement",number:"114",rarity:"Rare Ultra"},{name:"Sacred Ash",number:"115",rarity:"Rare Ultra"},{name:"Tarragon",number:"116",rarity:"Rare Ultra"},{name:"Wondrous Patch",number:"117",rarity:"Rare Ultra"},{name:"Mega Starmie ex",number:"118",rarity:"Special Illustration Rare"},{name:"Mega Clefable ex",number:"119",rarity:"Special Illustration Rare"},{name:"Mega Zygarde ex",number:"120",rarity:"Special Illustration Rare"},{name:"Meowth ex",number:"121",rarity:"Special Illustration Rare"},{name:"Jacinthe",number:"122",rarity:"Special Illustration Rare"},{name:"Rosa's Encouragement",number:"123",rarity:"Special Illustration Rare"},{name:"Mega Zygarde ex",number:"124",rarity:"Mega Hyper Rare"},
+  ],
+  'phantasmal-flames': [
+    {name:"Oddish",number:"1",rarity:"Common"},{name:"Gloom",number:"2",rarity:"Uncommon"},{name:"Vileplume",number:"3",rarity:"Rare Holo"},{name:"Mega Heracross ex",number:"4",rarity:"Double Rare"},{name:"Lotad",number:"5",rarity:"Common"},{name:"Lombre",number:"6",rarity:"Uncommon"},{name:"Ludicolo",number:"7",rarity:"Rare Holo"},{name:"Genesect",number:"8",rarity:"Rare Holo"},{name:"Nymble",number:"9",rarity:"Common"},{name:"Lokix",number:"10",rarity:"Uncommon"},{name:"Charmander",number:"11",rarity:"Common"},{name:"Charmeleon",number:"12",rarity:"Uncommon"},{name:"Mega Charizard X ex",number:"13",rarity:"Double Rare"},{name:"Moltres",number:"14",rarity:"Rare Holo"},{name:"Darumaka",number:"15",rarity:"Common"},{name:"Darmanitan",number:"16",rarity:"Uncommon"},{name:"Reshiram",number:"17",rarity:"Rare Holo"},{name:"Oricorio ex",number:"18",rarity:"Double Rare"},{name:"Charcadet",number:"19",rarity:"Common"},{name:"Ceruledge",number:"20",rarity:"Uncommon"},{name:"Seel",number:"21",rarity:"Common"},{name:"Dewgong",number:"22",rarity:"Uncommon"},{name:"Swinub",number:"23",rarity:"Common"},{name:"Piloswine",number:"24",rarity:"Uncommon"},{name:"Mamoswine",number:"25",rarity:"Rare Holo"},{name:"Suicune",number:"26",rarity:"Rare Holo"},{name:"Piplup",number:"27",rarity:"Common"},{name:"Prinplup",number:"28",rarity:"Uncommon"},{name:"Rotom ex",number:"29",rarity:"Double Rare"},{name:"Yamper",number:"30",rarity:"Common"},{name:"Boltund",number:"31",rarity:"Uncommon"},{name:"Pawmi",number:"32",rarity:"Common"},{name:"Pawmo",number:"33",rarity:"Uncommon"},{name:"Pawmot",number:"34",rarity:"Rare Holo"},{name:"Misdreavus",number:"35",rarity:"Common"},{name:"Mismagius ex",number:"36",rarity:"Double Rare"},{name:"Snubbull",number:"37",rarity:"Common"},{name:"Granbull",number:"38",rarity:"Uncommon"},{name:"Cresselia",number:"39",rarity:"Rare Holo"},{name:"Meloetta",number:"40",rarity:"Rare Holo"},{name:"Mega Diancie ex",number:"41",rarity:"Double Rare"},{name:"Mimikyu",number:"42",rarity:"Uncommon"},{name:"Milcery",number:"43",rarity:"Common"},{name:"Alcremie",number:"44",rarity:"Uncommon"},{name:"Zacian",number:"45",rarity:"Rare Holo"},{name:"Bramblin",number:"46",rarity:"Common"},{name:"Brambleghast",number:"47",rarity:"Uncommon"},{name:"Paldean Tauros",number:"48",rarity:"Common"},{name:"Gligar",number:"49",rarity:"Common"},{name:"Gliscor",number:"50",rarity:"Uncommon"},{name:"Trapinch",number:"51",rarity:"Common"},{name:"Vibrava",number:"52",rarity:"Uncommon"},{name:"Flygon",number:"53",rarity:"Rare Holo"},{name:"Gastly",number:"54",rarity:"Common"},{name:"Haunter",number:"55",rarity:"Uncommon"},{name:"Mega Gengar ex",number:"56",rarity:"Double Rare"},{name:"Murkrow",number:"57",rarity:"Common"},{name:"Honchkrow",number:"58",rarity:"Uncommon"},{name:"Sableye",number:"59",rarity:"Uncommon"},{name:"Carvanha",number:"60",rarity:"Common"},{name:"Mega Sharpedo ex",number:"61",rarity:"Double Rare"},{name:"Seviper",number:"62",rarity:"Common"},{name:"Absol",number:"63",rarity:"Uncommon"},{name:"Sandile",number:"64",rarity:"Common"},{name:"Krokorok",number:"65",rarity:"Uncommon"},{name:"Krookodile",number:"66",rarity:"Rare Holo"},{name:"Toxel",number:"67",rarity:"Common"},{name:"Toxtricity",number:"68",rarity:"Uncommon"},{name:"Eternatus",number:"69",rarity:"Rare Holo"},{name:"Riolu",number:"70",rarity:"Common"},{name:"Mega Lopunny ex",number:"71",rarity:"Double Rare"},{name:"Buneary",number:"72",rarity:"Common"},{name:"Lopunny",number:"73",rarity:"Uncommon"},{name:"Dawn",number:"74",rarity:"Uncommon"},{name:"Fan Club Director",number:"75",rarity:"Uncommon"},{name:"Lumiose City",number:"76",rarity:"Uncommon"},{name:"Mega Turbo",number:"77",rarity:"Uncommon"},{name:"Nest Ball",number:"78",rarity:"Common"},{name:"Poke Doll",number:"79",rarity:"Uncommon"},{name:"Professor's Research",number:"80",rarity:"Uncommon"},{name:"Rare Candy",number:"81",rarity:"Uncommon"},{name:"Switch",number:"82",rarity:"Common"},{name:"Ultra Ball",number:"83",rarity:"Uncommon"},{name:"Grass Energy",number:"84",rarity:"Common"},{name:"Fire Energy",number:"85",rarity:"Common"},{name:"Water Energy",number:"86",rarity:"Common"},{name:"Lightning Energy",number:"87",rarity:"Common"},{name:"Psychic Energy",number:"88",rarity:"Common"},{name:"Darkness Energy",number:"89",rarity:"Common"},{name:"Fighting Energy",number:"90",rarity:"Common"},{name:"Metal Energy",number:"91",rarity:"Common"},{name:"Fairy Energy",number:"92",rarity:"Common"},{name:"Double Turbo Energy",number:"93",rarity:"Uncommon"},{name:"Stellar Energy",number:"94",rarity:"Uncommon"},
+    {name:"Oddish",number:"95",rarity:"Illustration Rare"},{name:"Charmander",number:"96",rarity:"Illustration Rare"},{name:"Charmeleon",number:"97",rarity:"Illustration Rare"},{name:"Moltres",number:"98",rarity:"Illustration Rare"},{name:"Suicune",number:"99",rarity:"Illustration Rare"},{name:"Piplup",number:"100",rarity:"Illustration Rare"},{name:"Misdreavus",number:"101",rarity:"Illustration Rare"},{name:"Sableye",number:"102",rarity:"Illustration Rare"},{name:"Mega Sharpedo ex",number:"103",rarity:"Illustration Rare"},{name:"Absol",number:"104",rarity:"Illustration Rare"},{name:"Buneary",number:"105",rarity:"Illustration Rare"},{name:"Mega Charizard X ex",number:"106",rarity:"Rare Ultra"},{name:"Mega Heracross ex",number:"107",rarity:"Rare Ultra"},{name:"Oricorio ex",number:"108",rarity:"Rare Ultra"},{name:"Rotom ex",number:"109",rarity:"Rare Ultra"},{name:"Mismagius ex",number:"110",rarity:"Rare Ultra"},{name:"Mega Diancie ex",number:"111",rarity:"Rare Ultra"},{name:"Mega Gengar ex",number:"112",rarity:"Rare Ultra"},{name:"Mega Sharpedo ex",number:"113",rarity:"Rare Ultra"},{name:"Mega Lopunny ex",number:"114",rarity:"Rare Ultra"},{name:"Dawn",number:"115",rarity:"Rare Ultra"},{name:"Fan Club Director",number:"116",rarity:"Rare Ultra"},{name:"Mega Turbo",number:"117",rarity:"Rare Ultra"},{name:"Poke Doll",number:"118",rarity:"Rare Ultra"},{name:"Professor's Research",number:"119",rarity:"Rare Ultra"},{name:"Sacred Ash",number:"120",rarity:"Rare Ultra"},{name:"Mega Charizard X ex",number:"121",rarity:"Special Illustration Rare"},{name:"Mega Gengar ex",number:"122",rarity:"Special Illustration Rare"},{name:"Mega Sharpedo ex",number:"123",rarity:"Special Illustration Rare"},{name:"Mega Lopunny ex",number:"124",rarity:"Special Illustration Rare"},{name:"Dawn",number:"125",rarity:"Special Illustration Rare"},{name:"Fan Club Director",number:"126",rarity:"Special Illustration Rare"},{name:"Mega Charizard X ex",number:"127",rarity:"Mega Hyper Rare"},
+  ],
+    'prismatic-evolutions': [
+    {name:"Exeggcute",number:"1",rarity:"Common"},{name:"Exeggutor",number:"2",rarity:"Uncommon"},{name:"Pinsir",number:"3",rarity:"Uncommon"},{name:"Budew",number:"4",rarity:"Common"},{name:"Leafeon",number:"5",rarity:"Uncommon"},{name:"Leafeon ex",number:"6",rarity:"Double Rare"},{name:"Cottonee",number:"7",rarity:"Common"},{name:"Whimsicott",number:"8",rarity:"Uncommon"},{name:"Applin",number:"9",rarity:"Common"},{name:"Dipplin",number:"10",rarity:"Uncommon"},{name:"Hydrapple ex",number:"11",rarity:"Double Rare"},{name:"Teal Mask Ogerpon ex",number:"12",rarity:"Double Rare"},{name:"Flareon",number:"13",rarity:"Uncommon"},{name:"Flareon ex",number:"14",rarity:"Double Rare"},{name:"Litleo",number:"15",rarity:"Common"},{name:"Pyroar",number:"16",rarity:"Uncommon"},{name:"Hearthflame Mask Ogerpon ex",number:"17",rarity:"Double Rare"},{name:"Vaporeon",number:"18",rarity:"Uncommon"},{name:"Vaporeon ex",number:"19",rarity:"Double Rare"},{name:"Luvdisc",number:"20",rarity:"Common"},{name:"Wellspring Mask Ogerpon ex",number:"21",rarity:"Double Rare"},{name:"Jolteon",number:"22",rarity:"Uncommon"},{name:"Jolteon ex",number:"23",rarity:"Double Rare"},{name:"Tapu Koko",number:"24",rarity:"Rare Holo"},{name:"Cornerstone Mask Ogerpon ex",number:"25",rarity:"Double Rare"},{name:"Espeon",number:"26",rarity:"Uncommon"},{name:"Espeon ex",number:"27",rarity:"Double Rare"},{name:"Wobbuffet",number:"28",rarity:"Common"},{name:"Umbreon",number:"29",rarity:"Uncommon"},{name:"Umbreon ex",number:"30",rarity:"Double Rare"},{name:"Darkrai",number:"31",rarity:"Rare Holo"},{name:"Glaceon",number:"32",rarity:"Uncommon"},{name:"Glaceon ex",number:"33",rarity:"Double Rare"},{name:"Cryogonal",number:"34",rarity:"Common"},{name:"Sylveon",number:"35",rarity:"Uncommon"},{name:"Sylveon ex",number:"36",rarity:"Double Rare"},{name:"Eevee",number:"37",rarity:"Common"},{name:"Eevee ex",number:"38",rarity:"Double Rare"},{name:"Chansey",number:"39",rarity:"Common"},{name:"Blissey",number:"40",rarity:"Uncommon"},{name:"Snorlax",number:"41",rarity:"Common"},{name:"Indeedee",number:"42",rarity:"Common"},{name:"Munchlax",number:"43",rarity:"Common"},{name:"Stufful",number:"44",rarity:"Common"},{name:"Bewear",number:"45",rarity:"Uncommon"},{name:"Bunnelby",number:"46",rarity:"Common"},{name:"Diggersby",number:"47",rarity:"Uncommon"},{name:"Furfrou",number:"48",rarity:"Common"},{name:"Eevee",number:"49",rarity:"Common"},{name:"Eevee",number:"50",rarity:"Common"},{name:"Revavroom",number:"51",rarity:"Common"},{name:"Poké Ball",number:"52",rarity:"Common"},{name:"Great Ball",number:"53",rarity:"Common"},{name:"Ultra Ball",number:"54",rarity:"Uncommon"},{name:"Master Ball",number:"55",rarity:"Rare Holo"},{name:"Ancient Booster Energy Capsule",number:"56",rarity:"Uncommon"},{name:"Bravery Charm",number:"57",rarity:"Uncommon"},{name:"Buddy-Buddy Poffin",number:"58",rarity:"Uncommon"},{name:"Counter Catcher",number:"59",rarity:"Uncommon"},{name:"Eevee Lure",number:"60",rarity:"Uncommon"},{name:"Energy Retrieval",number:"61",rarity:"Common"},{name:"Enhanced Hammer",number:"62",rarity:"Uncommon"},{name:"Explorers of Tomorrow",number:"63",rarity:"Uncommon"},{name:"Full-Art Supporter",number:"64",rarity:"Rare Holo"},{name:"Future Booster Energy Capsule",number:"65",rarity:"Uncommon"},{name:"Hisuian Heavy Ball",number:"66",rarity:"Uncommon"},{name:"Lana's Fishing Rod",number:"67",rarity:"Uncommon"},{name:"Nest Ball",number:"68",rarity:"Common"},{name:"Night Stretcher",number:"69",rarity:"Uncommon"},{name:"Pal Pad",number:"70",rarity:"Common"},{name:"Pokégear 3.0",number:"71",rarity:"Uncommon"},{name:"Pokémon League HQ",number:"72",rarity:"Uncommon"},{name:"Rescue Board",number:"73",rarity:"Uncommon"},{name:"Rigid Band",number:"74",rarity:"Uncommon"},{name:"Super Rod",number:"75",rarity:"Common"},{name:"Switch",number:"76",rarity:"Common"},{name:"Switch Cart",number:"77",rarity:"Uncommon"},{name:"Teal Mask",number:"78",rarity:"Uncommon"},{name:"TM: Tera Shift",number:"79",rarity:"Uncommon"},{name:"Tool Box",number:"80",rarity:"Uncommon"},{name:"Arven",number:"81",rarity:"Uncommon"},{name:"Boss's Orders",number:"82",rarity:"Uncommon"},{name:"Briar",number:"83",rarity:"Uncommon"},{name:"Crispin",number:"84",rarity:"Uncommon"},{name:"Drayton",number:"85",rarity:"Uncommon"},{name:"Eri",number:"86",rarity:"Uncommon"},{name:"Juliana",number:"87",rarity:"Uncommon"},{name:"Kieran",number:"88",rarity:"Uncommon"},{name:"Lacey",number:"89",rarity:"Uncommon"},{name:"Lillie's Clefairy",number:"90",rarity:"Uncommon"},{name:"Penny",number:"91",rarity:"Uncommon"},{name:"Professor's Research",number:"92",rarity:"Uncommon"},{name:"Tulip",number:"93",rarity:"Uncommon"},{name:"Grass Energy",number:"94",rarity:"Common"},{name:"Fire Energy",number:"95",rarity:"Common"},{name:"Water Energy",number:"96",rarity:"Common"},{name:"Lightning Energy",number:"97",rarity:"Common"},{name:"Psychic Energy",number:"98",rarity:"Common"},{name:"Fighting Energy",number:"99",rarity:"Common"},{name:"Darkness Energy",number:"100",rarity:"Common"},{name:"Metal Energy",number:"101",rarity:"Common"},{name:"Colorless Energy",number:"102",rarity:"Common"},{name:"Prismatic Energy",number:"103",rarity:"Uncommon"},
+    // Secret Rares
+    {name:"Leafeon ex",number:"104",rarity:"Illustration Rare"},{name:"Flareon ex",number:"105",rarity:"Illustration Rare"},{name:"Vaporeon ex",number:"106",rarity:"Illustration Rare"},{name:"Jolteon ex",number:"107",rarity:"Illustration Rare"},{name:"Espeon ex",number:"108",rarity:"Illustration Rare"},{name:"Umbreon ex",number:"109",rarity:"Illustration Rare"},{name:"Glaceon ex",number:"110",rarity:"Illustration Rare"},{name:"Sylveon ex",number:"111",rarity:"Illustration Rare"},{name:"Eevee ex",number:"112",rarity:"Illustration Rare"},{name:"Indeedee",number:"113",rarity:"Illustration Rare"},{name:"Bunnelby",number:"114",rarity:"Illustration Rare"},{name:"Eevee",number:"115",rarity:"Illustration Rare"},{name:"Eevee",number:"116",rarity:"Illustration Rare"},{name:"Eevee",number:"117",rarity:"Illustration Rare"},{name:"Eevee Lure",number:"118",rarity:"Illustration Rare"},{name:"Explorers of Tomorrow",number:"119",rarity:"Illustration Rare"},{name:"Night Stretcher",number:"120",rarity:"Illustration Rare"},{name:"Arven",number:"121",rarity:"Illustration Rare"},{name:"Briar",number:"122",rarity:"Illustration Rare"},{name:"Crispin",number:"123",rarity:"Illustration Rare"},{name:"Drayton",number:"124",rarity:"Illustration Rare"},{name:"Eri",number:"125",rarity:"Illustration Rare"},{name:"Juliana",number:"126",rarity:"Illustration Rare"},{name:"Kieran",number:"127",rarity:"Illustration Rare"},{name:"Lacey",number:"128",rarity:"Illustration Rare"},{name:"Tulip",number:"129",rarity:"Illustration Rare"},{name:"Hydrapple ex",number:"130",rarity:"Rare Ultra"},{name:"Teal Mask Ogerpon ex",number:"131",rarity:"Rare Ultra"},{name:"Hearthflame Mask Ogerpon ex",number:"132",rarity:"Rare Ultra"},{name:"Wellspring Mask Ogerpon ex",number:"133",rarity:"Rare Ultra"},{name:"Jolteon ex",number:"134",rarity:"Rare Ultra"},{name:"Espeon ex",number:"135",rarity:"Rare Ultra"},{name:"Umbreon ex",number:"136",rarity:"Rare Ultra"},{name:"Glaceon ex",number:"137",rarity:"Rare Ultra"},{name:"Sylveon ex",number:"138",rarity:"Rare Ultra"},{name:"Eevee ex",number:"139",rarity:"Rare Ultra"},{name:"Arven",number:"140",rarity:"Rare Ultra"},{name:"Boss's Orders",number:"141",rarity:"Rare Ultra"},{name:"Briar",number:"142",rarity:"Rare Ultra"},{name:"Crispin",number:"143",rarity:"Rare Ultra"},{name:"Leafeon ex",number:"144",rarity:"Special Illustration Rare"},{name:"Flareon ex",number:"145",rarity:"Special Illustration Rare"},{name:"Vaporeon ex",number:"146",rarity:"Special Illustration Rare"},{name:"Jolteon ex",number:"147",rarity:"Special Illustration Rare"},{name:"Espeon ex",number:"148",rarity:"Special Illustration Rare"},{name:"Umbreon ex",number:"149",rarity:"Special Illustration Rare"},{name:"Glaceon ex",number:"150",rarity:"Special Illustration Rare"},{name:"Sylveon ex",number:"151",rarity:"Special Illustration Rare"},{name:"Eevee ex",number:"152",rarity:"Special Illustration Rare"},{name:"Arven",number:"153",rarity:"Special Illustration Rare"},{name:"Boss's Orders",number:"154",rarity:"Special Illustration Rare"},{name:"Briar",number:"155",rarity:"Special Illustration Rare"},{name:"Sylveon ex",number:"156",rarity:"Special Illustration Rare"},{name:"Eevee ex",number:"157",rarity:"Special Illustration Rare"},{name:"Leafeon ex",number:"158",rarity:"Hyper Rare"},{name:"Flareon ex",number:"159",rarity:"Hyper Rare"},{name:"Vaporeon ex",number:"160",rarity:"Hyper Rare"},{name:"Jolteon ex",number:"161",rarity:"Hyper Rare"},{name:"Espeon ex",number:"162",rarity:"Hyper Rare"},{name:"Umbreon ex",number:"163",rarity:"Hyper Rare"},{name:"Glaceon ex",number:"164",rarity:"Hyper Rare"},{name:"Sylveon ex",number:"165",rarity:"Hyper Rare"},{name:"Eevee ex",number:"166",rarity:"Hyper Rare"},{name:"Cornerstone Mask Ogerpon ex",number:"167",rarity:"Rare Ultra"},{name:"Darkrai",number:"168",rarity:"Rare Ultra"},{name:"Penny",number:"169",rarity:"Rare Ultra"},{name:"Drayton",number:"170",rarity:"Illustration Rare"},{name:"Lacey",number:"171",rarity:"Illustration Rare"},{name:"Kieran",number:"172",rarity:"Illustration Rare"},{name:"Cornerstone Mask Ogerpon ex",number:"173",rarity:"Special Illustration Rare"},{name:"Darkrai",number:"174",rarity:"Special Illustration Rare"},{name:"Penny",number:"175",rarity:"Special Illustration Rare"},{name:"Cornerstone Mask Ogerpon ex",number:"176",rarity:"Hyper Rare"},{name:"Darkrai",number:"177",rarity:"Hyper Rare"},{name:"Penny",number:"178",rarity:"Hyper Rare"},{name:"Eevee ex",number:"179",rarity:"Special Illustration Rare"},{name:"Umbreon ex",number:"180",rarity:"Special Illustration Rare"},
+  ],
+  'white-flare': [
+    {name:"Snivy",number:"1",rarity:"Common"},{name:"Servine",number:"2",rarity:"Uncommon"},{name:"Serperior",number:"3",rarity:"Rare Holo"},{name:"Pansage",number:"4",rarity:"Common"},{name:"Simisage",number:"5",rarity:"Uncommon"},{name:"Petilil",number:"6",rarity:"Common"},{name:"Lilligant",number:"7",rarity:"Uncommon"},{name:"Maractus",number:"8",rarity:"Common"},{name:"Karrablast",number:"9",rarity:"Common"},{name:"Foongus",number:"10",rarity:"Common"},{name:"Amoonguss",number:"11",rarity:"Uncommon"},{name:"Virizion",number:"12",rarity:"Rare Holo"},{name:"Victini",number:"13",rarity:"Rare Holo"},{name:"Tepig",number:"14",rarity:"Common"},{name:"Pignite",number:"15",rarity:"Uncommon"},{name:"Emboar ex",number:"16",rarity:"Double Rare"},{name:"Pansear",number:"17",rarity:"Common"},{name:"Simisear",number:"18",rarity:"Uncommon"},{name:"Darumaka",number:"19",rarity:"Common"},{name:"Darmanitan",number:"20",rarity:"Uncommon"},{name:"Litwick",number:"21",rarity:"Common"},{name:"Lampent",number:"22",rarity:"Uncommon"},{name:"Chandelure",number:"23",rarity:"Rare Holo"},{name:"Larvesta",number:"24",rarity:"Common"},{name:"Volcarona ex",number:"25",rarity:"Double Rare"},{name:"Reshiram",number:"26",rarity:"Rare Holo"},{name:"Oshawott",number:"27",rarity:"Common"},{name:"Dewott",number:"28",rarity:"Uncommon"},{name:"Samurott ex",number:"29",rarity:"Double Rare"},{name:"Panpour",number:"30",rarity:"Common"},{name:"Simipour",number:"31",rarity:"Uncommon"},{name:"Tympole",number:"32",rarity:"Common"},{name:"Palpitoad",number:"33",rarity:"Uncommon"},{name:"Seismitoad",number:"34",rarity:"Uncommon"},{name:"Ducklett",number:"35",rarity:"Common"},{name:"Swanna",number:"36",rarity:"Uncommon"},{name:"Vanillite",number:"37",rarity:"Common"},{name:"Vanillish",number:"38",rarity:"Uncommon"},{name:"Vanilluxe",number:"39",rarity:"Rare Holo"},{name:"Tirtouga",number:"40",rarity:"Common"},{name:"Carracosta",number:"41",rarity:"Uncommon"},{name:"Alomomola",number:"42",rarity:"Common"},{name:"Cubchoo",number:"43",rarity:"Common"},{name:"Beartic",number:"44",rarity:"Uncommon"},{name:"Cryogonal",number:"45",rarity:"Common"},{name:"Kyurem",number:"46",rarity:"Rare Holo"},{name:"White Kyurem ex",number:"47",rarity:"Double Rare"},{name:"Blitzle",number:"48",rarity:"Common"},{name:"Zebstrika",number:"49",rarity:"Uncommon"},{name:"Emolga",number:"50",rarity:"Common"},{name:"Joltik",number:"51",rarity:"Common"},{name:"Galvantula",number:"52",rarity:"Uncommon"},{name:"Stunfisk",number:"53",rarity:"Common"},{name:"Thundurus",number:"54",rarity:"Rare Holo"},{name:"Munna",number:"55",rarity:"Common"},{name:"Musharna",number:"56",rarity:"Uncommon"},{name:"Woobat",number:"57",rarity:"Common"},{name:"Swoobat",number:"58",rarity:"Uncommon"},{name:"Solosis",number:"59",rarity:"Common"},{name:"Duosion",number:"60",rarity:"Uncommon"},{name:"Reuniclus ex",number:"61",rarity:"Double Rare"},{name:"Sigilyph",number:"62",rarity:"Uncommon"},{name:"Elgyem",number:"63",rarity:"Common"},{name:"Beheeyem",number:"64",rarity:"Uncommon"},{name:"Meloetta ex",number:"65",rarity:"Double Rare"},{name:"Pidove",number:"66",rarity:"Common"},{name:"Tranquill",number:"67",rarity:"Uncommon"},{name:"Unfezant",number:"68",rarity:"Rare Holo"},{name:"Audino",number:"69",rarity:"Common"},{name:"Minccino",number:"70",rarity:"Common"},{name:"Cinccino",number:"71",rarity:"Uncommon"},{name:"Energy Coin",number:"72",rarity:"Uncommon"},{name:"Antique Cover Fossil",number:"73",rarity:"Common"},{name:"Air Balloon",number:"74",rarity:"Uncommon"},{name:"Pokégear 3.0",number:"75",rarity:"Uncommon"},{name:"N's Plot",number:"76",rarity:"Uncommon"},{name:"Fennel",number:"77",rarity:"Uncommon"},{name:"Professor's Research",number:"78",rarity:"Uncommon"},{name:"Switch",number:"79",rarity:"Common"},{name:"Ultra Ball",number:"80",rarity:"Uncommon"},{name:"Prism Energy",number:"81",rarity:"Uncommon"},{name:"Grass Energy",number:"82",rarity:"Common"},{name:"Fire Energy",number:"83",rarity:"Common"},{name:"Water Energy",number:"84",rarity:"Common"},{name:"Lightning Energy",number:"85",rarity:"Common"},{name:"Psychic Energy",number:"86",rarity:"Common"},
+    // Illustration Rares (87-158)
+    {name:"Snivy",number:"87",rarity:"Illustration Rare"},{name:"Servine",number:"88",rarity:"Illustration Rare"},{name:"Pansage",number:"89",rarity:"Illustration Rare"},{name:"Simisage",number:"90",rarity:"Illustration Rare"},{name:"Petilil",number:"91",rarity:"Illustration Rare"},{name:"Lilligant",number:"92",rarity:"Illustration Rare"},{name:"Maractus",number:"93",rarity:"Illustration Rare"},{name:"Karrablast",number:"94",rarity:"Illustration Rare"},{name:"Foongus",number:"95",rarity:"Illustration Rare"},{name:"Amoonguss",number:"96",rarity:"Illustration Rare"},{name:"Victini",number:"97",rarity:"Illustration Rare"},{name:"Darumaka",number:"98",rarity:"Illustration Rare"},{name:"Darmanitan",number:"99",rarity:"Illustration Rare"},{name:"Litwick",number:"100",rarity:"Illustration Rare"},{name:"Lampent",number:"101",rarity:"Illustration Rare"},{name:"Chandelure",number:"102",rarity:"Illustration Rare"},{name:"Larvesta",number:"103",rarity:"Illustration Rare"},{name:"Volcarona",number:"104",rarity:"Illustration Rare"},{name:"Panpour",number:"105",rarity:"Illustration Rare"},{name:"Simipour",number:"106",rarity:"Illustration Rare"},{name:"Tympole",number:"107",rarity:"Illustration Rare"},{name:"Palpitoad",number:"108",rarity:"Illustration Rare"},{name:"Seismitoad",number:"109",rarity:"Illustration Rare"},{name:"Tirtouga",number:"110",rarity:"Illustration Rare"},{name:"Carracosta",number:"111",rarity:"Illustration Rare"},{name:"Alomomola",number:"112",rarity:"Illustration Rare"},{name:"Cubchoo",number:"113",rarity:"Illustration Rare"},{name:"Beartic",number:"114",rarity:"Illustration Rare"},{name:"Cryogonal",number:"115",rarity:"Illustration Rare"},{name:"Emolga",number:"116",rarity:"Illustration Rare"},{name:"Tynamo",number:"117",rarity:"Illustration Rare"},{name:"Eelektrik",number:"118",rarity:"Illustration Rare"},{name:"Eelektross",number:"119",rarity:"Illustration Rare"},{name:"Thundurus",number:"120",rarity:"Illustration Rare"},{name:"Munna",number:"121",rarity:"Illustration Rare"},{name:"Musharna",number:"122",rarity:"Illustration Rare"},{name:"Solosis",number:"123",rarity:"Illustration Rare"},{name:"Duosion",number:"124",rarity:"Illustration Rare"},{name:"Reuniclus",number:"125",rarity:"Illustration Rare"},{name:"Elgyem",number:"126",rarity:"Illustration Rare"},{name:"Beheeyem",number:"127",rarity:"Illustration Rare"},{name:"Golett",number:"128",rarity:"Illustration Rare"},{name:"Golurk",number:"129",rarity:"Illustration Rare"},{name:"Pidove",number:"130",rarity:"Illustration Rare"},{name:"Tranquill",number:"131",rarity:"Illustration Rare"},{name:"Unfezant",number:"132",rarity:"Illustration Rare"},{name:"Audino",number:"133",rarity:"Illustration Rare"},{name:"Minccino",number:"134",rarity:"Illustration Rare"},{name:"Cinccino",number:"135",rarity:"Illustration Rare"},{name:"N's Plot",number:"136",rarity:"Illustration Rare"},{name:"Fennel",number:"137",rarity:"Illustration Rare"},
+    // Ultra Rares (138-162)
+    {name:"Serperior ex",number:"138",rarity:"Rare Ultra"},{name:"Emboar ex",number:"139",rarity:"Rare Ultra"},{name:"Volcarona ex",number:"140",rarity:"Rare Ultra"},{name:"Reshiram",number:"141",rarity:"Rare Ultra"},{name:"Samurott ex",number:"142",rarity:"Rare Ultra"},{name:"Vanilluxe",number:"143",rarity:"Rare Ultra"},{name:"White Kyurem ex",number:"144",rarity:"Rare Ultra"},{name:"Reuniclus ex",number:"145",rarity:"Rare Ultra"},{name:"Meloetta ex",number:"146",rarity:"Rare Ultra"},{name:"Fennel",number:"147",rarity:"Rare Ultra"},{name:"Victini",number:"148",rarity:"Rare Ultra"},
+    // Special Illustration Rares (149-170)
+    {name:"Emboar ex",number:"149",rarity:"Special Illustration Rare"},{name:"Reshiram",number:"150",rarity:"Special Illustration Rare"},{name:"Samurott ex",number:"151",rarity:"Special Illustration Rare"},{name:"White Kyurem ex",number:"152",rarity:"Special Illustration Rare"},{name:"Reuniclus ex",number:"153",rarity:"Special Illustration Rare"},{name:"Meloetta ex",number:"154",rarity:"Special Illustration Rare"},{name:"Fennel",number:"155",rarity:"Special Illustration Rare"},{name:"Serperior ex",number:"156",rarity:"Special Illustration Rare"},{name:"Volcarona ex",number:"157",rarity:"Special Illustration Rare"},{name:"Victini",number:"158",rarity:"Special Illustration Rare"},
+    // Hyper Rares (159-170)  
+    {name:"Serperior ex",number:"159",rarity:"Hyper Rare"},{name:"Emboar ex",number:"160",rarity:"Hyper Rare"},{name:"Volcarona ex",number:"161",rarity:"Hyper Rare"},{name:"Reshiram",number:"162",rarity:"Hyper Rare"},{name:"Samurott ex",number:"163",rarity:"Hyper Rare"},{name:"White Kyurem ex",number:"164",rarity:"Hyper Rare"},{name:"Reuniclus ex",number:"165",rarity:"Hyper Rare"},{name:"Meloetta ex",number:"166",rarity:"Hyper Rare"},{name:"Fennel",number:"167",rarity:"Hyper Rare"},
+    // Black White Rares (168-173)
+    {name:"Victini",number:"168",rarity:"Rare Ultra"},{name:"White Kyurem ex",number:"169",rarity:"Rare Ultra"},{name:"Reshiram ex",number:"170",rarity:"Rare Ultra"},{name:"Victini",number:"171",rarity:"Rare Ultra"},{name:"Reshiram ex",number:"172",rarity:"Rare Ultra"},{name:"Reshiram ex",number:"173",rarity:"Hyper Rare"},
+  ],
+  'black-bolt': [
+    {name:"Sewaddle",number:"1",rarity:"Common"},{name:"Swadloon",number:"2",rarity:"Uncommon"},{name:"Leavanny ex",number:"3",rarity:"Double Rare"},{name:"Cottonee",number:"4",rarity:"Common"},{name:"Whimsicott",number:"5",rarity:"Uncommon"},{name:"Deerling",number:"6",rarity:"Common"},{name:"Sawsbuck",number:"7",rarity:"Uncommon"},{name:"Shelmet",number:"8",rarity:"Common"},{name:"Accelgor",number:"9",rarity:"Uncommon"},{name:"Virizion",number:"10",rarity:"Rare Holo"},{name:"Sawk",number:"11",rarity:"Common"},{name:"Throh",number:"12",rarity:"Common"},{name:"Timburr",number:"13",rarity:"Common"},{name:"Gurdurr",number:"14",rarity:"Uncommon"},{name:"Conkeldurr ex",number:"15",rarity:"Double Rare"},{name:"Drilbur",number:"16",rarity:"Common"},{name:"Excadrill",number:"17",rarity:"Uncommon"},{name:"Roggenrola",number:"18",rarity:"Common"},{name:"Boldore",number:"19",rarity:"Uncommon"},{name:"Gigalith",number:"20",rarity:"Rare Holo"},{name:"Dwebble",number:"21",rarity:"Common"},{name:"Crustle",number:"22",rarity:"Uncommon"},{name:"Sandile",number:"23",rarity:"Common"},{name:"Krokorok",number:"24",rarity:"Uncommon"},{name:"Krookodile ex",number:"25",rarity:"Double Rare"},{name:"Landorus",number:"26",rarity:"Rare Holo"},{name:"Cobalion",number:"27",rarity:"Rare Holo"},{name:"Terrakion",number:"28",rarity:"Rare Holo"},{name:"Yamask",number:"29",rarity:"Common"},{name:"Cofagrigus",number:"30",rarity:"Uncommon"},{name:"Golett",number:"31",rarity:"Common"},{name:"Golurk ex",number:"32",rarity:"Double Rare"},{name:"Vullaby",number:"33",rarity:"Common"},{name:"Mandibuzz",number:"34",rarity:"Uncommon"},{name:"Pawniard",number:"35",rarity:"Common"},{name:"Bisharp",number:"36",rarity:"Uncommon"},{name:"Escavalier",number:"37",rarity:"Uncommon"},{name:"Axew",number:"38",rarity:"Common"},{name:"Fraxure",number:"39",rarity:"Uncommon"},{name:"Haxorus",number:"40",rarity:"Rare Holo"},{name:"Deino",number:"41",rarity:"Common"},{name:"Zweilous",number:"42",rarity:"Uncommon"},{name:"Hydreigon ex",number:"43",rarity:"Double Rare"},{name:"Zekrom",number:"44",rarity:"Rare Holo"},{name:"Black Kyurem ex",number:"45",rarity:"Double Rare"},{name:"Woobat",number:"46",rarity:"Common"},{name:"Swoobat",number:"47",rarity:"Uncommon"},{name:"Gothita",number:"48",rarity:"Common"},{name:"Gothorita",number:"49",rarity:"Uncommon"},{name:"Gothitelle ex",number:"50",rarity:"Double Rare"},{name:"Frillish",number:"51",rarity:"Common"},{name:"Jellicent",number:"52",rarity:"Uncommon"},{name:"Mienfoo",number:"53",rarity:"Common"},{name:"Mienshao",number:"54",rarity:"Uncommon"},{name:"Archen",number:"55",rarity:"Common"},{name:"Archeops",number:"56",rarity:"Uncommon"},{name:"Venipede",number:"57",rarity:"Common"},{name:"Whirlipede",number:"58",rarity:"Uncommon"},{name:"Scolipede",number:"59",rarity:"Rare Holo"},{name:"Tynamo",number:"60",rarity:"Common"},{name:"Eelektrik",number:"61",rarity:"Uncommon"},{name:"Eelektross",number:"62",rarity:"Rare Holo"},{name:"Bouffalant",number:"63",rarity:"Common"},{name:"Rufflet",number:"64",rarity:"Common"},{name:"Braviary",number:"65",rarity:"Uncommon"},{name:"Tornadus",number:"66",rarity:"Rare Holo"},{name:"Antique Sail Fossil",number:"67",rarity:"Common"},{name:"Black Belt",number:"68",rarity:"Uncommon"},{name:"Crushing Hammer",number:"69",rarity:"Common"},{name:"Energy Retrieval",number:"70",rarity:"Common"},{name:"Giant Cape",number:"71",rarity:"Uncommon"},{name:"Pokémon Communication",number:"72",rarity:"Uncommon"},{name:"Rare Candy",number:"73",rarity:"Uncommon"},{name:"Rocky Helmet",number:"74",rarity:"Uncommon"},{name:"Bianca",number:"75",rarity:"Uncommon"},{name:"Cheren",number:"76",rarity:"Uncommon"},{name:"Iris",number:"77",rarity:"Uncommon"},{name:"N",number:"78",rarity:"Uncommon"},{name:"Professor's Research",number:"79",rarity:"Uncommon"},{name:"Skyla",number:"80",rarity:"Uncommon"},{name:"Fighting Energy",number:"81",rarity:"Common"},{name:"Darkness Energy",number:"82",rarity:"Common"},{name:"Metal Energy",number:"83",rarity:"Common"},{name:"Dragon Energy",number:"84",rarity:"Common"},{name:"Colorless Energy",number:"85",rarity:"Common"},{name:"Double Colorless Energy",number:"86",rarity:"Uncommon"},
+    // Illustration Rares (87-158)
+    {name:"Sewaddle",number:"87",rarity:"Illustration Rare"},{name:"Swadloon",number:"88",rarity:"Illustration Rare"},{name:"Cottonee",number:"89",rarity:"Illustration Rare"},{name:"Whimsicott",number:"90",rarity:"Illustration Rare"},{name:"Deerling",number:"91",rarity:"Illustration Rare"},{name:"Sawsbuck",number:"92",rarity:"Illustration Rare"},{name:"Shelmet",number:"93",rarity:"Illustration Rare"},{name:"Accelgor",number:"94",rarity:"Illustration Rare"},{name:"Sawk",number:"95",rarity:"Illustration Rare"},{name:"Throh",number:"96",rarity:"Illustration Rare"},{name:"Timburr",number:"97",rarity:"Illustration Rare"},{name:"Gurdurr",number:"98",rarity:"Illustration Rare"},{name:"Drilbur",number:"99",rarity:"Illustration Rare"},{name:"Roggenrola",number:"100",rarity:"Illustration Rare"},{name:"Boldore",number:"101",rarity:"Illustration Rare"},{name:"Dwebble",number:"102",rarity:"Illustration Rare"},{name:"Crustle",number:"103",rarity:"Illustration Rare"},{name:"Sandile",number:"104",rarity:"Illustration Rare"},{name:"Krokorok",number:"105",rarity:"Illustration Rare"},{name:"Yamask",number:"106",rarity:"Illustration Rare"},{name:"Cofagrigus",number:"107",rarity:"Illustration Rare"},{name:"Golett",number:"108",rarity:"Illustration Rare"},{name:"Vullaby",number:"109",rarity:"Illustration Rare"},{name:"Pawniard",number:"110",rarity:"Illustration Rare"},{name:"Bisharp",number:"111",rarity:"Illustration Rare"},{name:"Axew",number:"112",rarity:"Illustration Rare"},{name:"Fraxure",number:"113",rarity:"Illustration Rare"},{name:"Deino",number:"114",rarity:"Illustration Rare"},{name:"Zweilous",number:"115",rarity:"Illustration Rare"},{name:"Woobat",number:"116",rarity:"Illustration Rare"},{name:"Gothita",number:"117",rarity:"Illustration Rare"},{name:"Gothorita",number:"118",rarity:"Illustration Rare"},{name:"Frillish",number:"119",rarity:"Illustration Rare"},{name:"Mienfoo",number:"120",rarity:"Illustration Rare"},{name:"Mienshao",number:"121",rarity:"Illustration Rare"},{name:"Archen",number:"122",rarity:"Illustration Rare"},{name:"Venipede",number:"123",rarity:"Illustration Rare"},{name:"Whirlipede",number:"124",rarity:"Illustration Rare"},{name:"Tynamo",number:"125",rarity:"Illustration Rare"},{name:"Bouffalant",number:"126",rarity:"Illustration Rare"},{name:"Rufflet",number:"127",rarity:"Illustration Rare"},{name:"N",number:"128",rarity:"Illustration Rare"},{name:"Iris",number:"129",rarity:"Illustration Rare"},
+    // Ultra Rares
+    {name:"Leavanny ex",number:"130",rarity:"Rare Ultra"},{name:"Conkeldurr ex",number:"131",rarity:"Rare Ultra"},{name:"Krookodile ex",number:"132",rarity:"Rare Ultra"},{name:"Zekrom",number:"133",rarity:"Rare Ultra"},{name:"Golurk ex",number:"134",rarity:"Rare Ultra"},{name:"Hydreigon ex",number:"135",rarity:"Rare Ultra"},{name:"Black Kyurem ex",number:"136",rarity:"Rare Ultra"},{name:"Gothitelle ex",number:"137",rarity:"Rare Ultra"},{name:"Iris",number:"138",rarity:"Rare Ultra"},{name:"N",number:"139",rarity:"Rare Ultra"},
+    // Special Illustration Rares
+    {name:"Leavanny ex",number:"140",rarity:"Special Illustration Rare"},{name:"Conkeldurr ex",number:"141",rarity:"Special Illustration Rare"},{name:"Krookodile ex",number:"142",rarity:"Special Illustration Rare"},{name:"Zekrom",number:"143",rarity:"Special Illustration Rare"},{name:"Golurk ex",number:"144",rarity:"Special Illustration Rare"},{name:"Hydreigon ex",number:"145",rarity:"Special Illustration Rare"},{name:"Black Kyurem ex",number:"146",rarity:"Special Illustration Rare"},{name:"Gothitelle ex",number:"147",rarity:"Special Illustration Rare"},{name:"Iris",number:"148",rarity:"Special Illustration Rare"},{name:"N",number:"149",rarity:"Special Illustration Rare"},
+    // Hyper Rares
+    {name:"Leavanny ex",number:"150",rarity:"Hyper Rare"},{name:"Conkeldurr ex",number:"151",rarity:"Hyper Rare"},{name:"Krookodile ex",number:"152",rarity:"Hyper Rare"},{name:"Zekrom",number:"153",rarity:"Hyper Rare"},{name:"Golurk ex",number:"154",rarity:"Hyper Rare"},{name:"Hydreigon ex",number:"155",rarity:"Hyper Rare"},{name:"Black Kyurem ex",number:"156",rarity:"Hyper Rare"},{name:"Gothitelle ex",number:"157",rarity:"Hyper Rare"},
+    // Black White Rares
+    {name:"Victini",number:"158",rarity:"Rare Ultra"},{name:"Black Kyurem ex",number:"159",rarity:"Rare Ultra"},{name:"Zekrom ex",number:"160",rarity:"Rare Ultra"},{name:"Victini",number:"161",rarity:"Rare Ultra"},{name:"Zekrom ex",number:"162",rarity:"Rare Ultra"},{name:"Zekrom ex",number:"163",rarity:"Hyper Rare"},
+  ],
+  'mega-evolution': [
+    {name:"Bulbasaur",number:"1",rarity:"Common"},{name:"Ivysaur",number:"2",rarity:"Uncommon"},{name:"Mega Venusaur ex",number:"3",rarity:"Double Rare"},{name:"Exeggcute",number:"4",rarity:"Common"},{name:"Exeggutor",number:"5",rarity:"Uncommon"},{name:"Tangela",number:"6",rarity:"Common"},{name:"Tangrowth",number:"7",rarity:"Uncommon"},{name:"Chikorita",number:"8",rarity:"Common"},{name:"Bayleef",number:"9",rarity:"Uncommon"},{name:"Meganium",number:"10",rarity:"Rare Holo"},{name:"Shuckle",number:"11",rarity:"Common"},{name:"Celebi",number:"12",rarity:"Rare Holo"},{name:"Seedot",number:"13",rarity:"Common"},{name:"Nuzleaf",number:"14",rarity:"Uncommon"},{name:"Shiftry",number:"15",rarity:"Uncommon"},{name:"Nincada",number:"16",rarity:"Common"},{name:"Ninjask",number:"17",rarity:"Uncommon"},{name:"Dhelmise",number:"18",rarity:"Uncommon"},{name:"Vulpix",number:"19",rarity:"Common"},{name:"Ninetales",number:"20",rarity:"Uncommon"},{name:"Numel",number:"21",rarity:"Common"},{name:"Mega Camerupt ex",number:"22",rarity:"Double Rare"},{name:"Litleo",number:"23",rarity:"Common"},{name:"Pyroar",number:"24",rarity:"Uncommon"},{name:"Volcanion",number:"25",rarity:"Rare Holo"},{name:"Scorbunny",number:"26",rarity:"Common"},{name:"Raboot",number:"27",rarity:"Uncommon"},{name:"Cinderace",number:"28",rarity:"Rare Holo"},{name:"Sizzlipede",number:"29",rarity:"Common"},{name:"Centiskorch",number:"30",rarity:"Uncommon"},{name:"Chi-Yu",number:"31",rarity:"Rare Holo"},{name:"Mantine",number:"32",rarity:"Common"},{name:"Corphish",number:"33",rarity:"Common"},{name:"Kyogre",number:"34",rarity:"Rare Holo"},{name:"Snover",number:"35",rarity:"Common"},{name:"Mega Abomasnow ex",number:"36",rarity:"Double Rare"},{name:"Clauncher",number:"37",rarity:"Common"},{name:"Clawitzer",number:"38",rarity:"Uncommon"},{name:"Sobble",number:"39",rarity:"Common"},{name:"Drizzile",number:"40",rarity:"Uncommon"},{name:"Inteleon",number:"41",rarity:"Rare Holo"},{name:"Snom",number:"42",rarity:"Common"},{name:"Frosmoth",number:"43",rarity:"Uncommon"},{name:"Eiscue",number:"44",rarity:"Uncommon"},{name:"Magnemite",number:"45",rarity:"Common"},{name:"Magneton",number:"46",rarity:"Uncommon"},{name:"Magnezone",number:"47",rarity:"Uncommon"},{name:"Raikou",number:"48",rarity:"Rare Holo"},{name:"Electrike",number:"49",rarity:"Common"},{name:"Mega Manectric ex",number:"50",rarity:"Double Rare"},{name:"Pachirisu",number:"51",rarity:"Common"},{name:"Helioptile",number:"52",rarity:"Common"},{name:"Heliolisk",number:"53",rarity:"Uncommon"},{name:"Abra",number:"54",rarity:"Common"},{name:"Kadabra",number:"55",rarity:"Uncommon"},{name:"Alakazam",number:"56",rarity:"Rare Holo"},{name:"Jynx",number:"57",rarity:"Uncommon"},{name:"Ralts",number:"58",rarity:"Common"},{name:"Kirlia",number:"59",rarity:"Uncommon"},{name:"Mega Gardevoir ex",number:"60",rarity:"Double Rare"},{name:"Shedinja",number:"61",rarity:"Uncommon"},{name:"Spoink",number:"62",rarity:"Common"},{name:"Grumpig",number:"63",rarity:"Uncommon"},{name:"Xerneas",number:"64",rarity:"Rare Holo"},{name:"Greavard",number:"65",rarity:"Common"},{name:"Houndstone",number:"66",rarity:"Uncommon"},{name:"Gimmighoul",number:"67",rarity:"Common"},{name:"Sandshrew",number:"68",rarity:"Common"},{name:"Sandslash",number:"69",rarity:"Uncommon"},{name:"Onix",number:"70",rarity:"Common"},{name:"Tyrogue",number:"71",rarity:"Common"},{name:"Makuhita",number:"72",rarity:"Common"},{name:"Hariyama",number:"73",rarity:"Uncommon"},{name:"Lunatone",number:"74",rarity:"Uncommon"},{name:"Solrock",number:"75",rarity:"Uncommon"},{name:"Riolu",number:"76",rarity:"Common"},{name:"Mega Lucario ex",number:"77",rarity:"Double Rare"},{name:"Croagunk",number:"78",rarity:"Common"},{name:"Toxicroak",number:"79",rarity:"Uncommon"},{name:"Hawlucha",number:"80",rarity:"Common"},{name:"Yveltal",number:"81",rarity:"Rare Holo"},{name:"Mega Tyranitar ex",number:"82",rarity:"Double Rare"},{name:"Zorua",number:"83",rarity:"Common"},{name:"Zoroark",number:"84",rarity:"Uncommon"},{name:"Stufful",number:"85",rarity:"Common"},{name:"Bewear",number:"86",rarity:"Uncommon"},{name:"Eevee",number:"87",rarity:"Common"},{name:"Mega Aggron ex",number:"88",rarity:"Double Rare"},{name:"Aron",number:"89",rarity:"Common"},{name:"Lairon",number:"90",rarity:"Uncommon"},{name:"Klink",number:"91",rarity:"Common"},{name:"Klang",number:"92",rarity:"Uncommon"},{name:"Klinklang",number:"93",rarity:"Uncommon"},{name:"Beldum",number:"94",rarity:"Common"},{name:"Metang",number:"95",rarity:"Uncommon"},{name:"Metagross",number:"96",rarity:"Rare Holo"},{name:"Registeel ex",number:"97",rarity:"Double Rare"},{name:"Gholdengo",number:"98",rarity:"Uncommon"},{name:"Noibat",number:"99",rarity:"Common"},{name:"Noivern",number:"100",rarity:"Uncommon"},{name:"Goomy",number:"101",rarity:"Common"},{name:"Sliggoo",number:"102",rarity:"Uncommon"},{name:"Mega Goodra ex",number:"103",rarity:"Double Rare"},{name:"Ditto",number:"104",rarity:"Common"},{name:"Kangaskhan",number:"105",rarity:"Uncommon"},{name:"Tauros",number:"106",rarity:"Common"},{name:"Snorlax",number:"107",rarity:"Uncommon"},{name:"Miltank",number:"108",rarity:"Common"},{name:"Skitty",number:"109",rarity:"Common"},{name:"Delcatty",number:"110",rarity:"Uncommon"},{name:"Meowth",number:"111",rarity:"Common"},{name:"Persian ex",number:"112",rarity:"Double Rare"},{name:"Aipom",number:"113",rarity:"Common"},{name:"Ambipom",number:"114",rarity:"Uncommon"},{name:"Archeops",number:"115",rarity:"Uncommon"},{name:"Archen",number:"116",rarity:"Common"},{name:"Boss's Orders",number:"117",rarity:"Uncommon"},{name:"Energy Switch",number:"118",rarity:"Common"},{name:"Lysandre",number:"119",rarity:"Uncommon"},{name:"Mega Turbo",number:"120",rarity:"Uncommon"},{name:"Pokemon Center Lady",number:"121",rarity:"Uncommon"},{name:"Professor Sycamore",number:"122",rarity:"Uncommon"},{name:"Rare Candy",number:"123",rarity:"Uncommon"},{name:"Switch",number:"124",rarity:"Common"},{name:"Ultra Ball",number:"125",rarity:"Uncommon"},{name:"Grass Energy",number:"126",rarity:"Common"},{name:"Fire Energy",number:"127",rarity:"Common"},{name:"Water Energy",number:"128",rarity:"Common"},{name:"Lightning Energy",number:"129",rarity:"Common"},{name:"Psychic Energy",number:"130",rarity:"Common"},{name:"Fighting Energy",number:"131",rarity:"Common"},{name:"Metal Energy",number:"132",rarity:"Common"},
+    {name:"Bulbasaur",number:"133",rarity:"Illustration Rare"},{name:"Vulpix",number:"134",rarity:"Illustration Rare"},{name:"Raikou",number:"135",rarity:"Illustration Rare"},{name:"Abra",number:"136",rarity:"Illustration Rare"},{name:"Ralts",number:"137",rarity:"Illustration Rare"},{name:"Greavard",number:"138",rarity:"Illustration Rare"},{name:"Onix",number:"139",rarity:"Illustration Rare"},{name:"Riolu",number:"140",rarity:"Illustration Rare"},{name:"Eevee",number:"141",rarity:"Illustration Rare"},{name:"Noibat",number:"142",rarity:"Illustration Rare"},{name:"Miltank",number:"143",rarity:"Illustration Rare"},{name:"Meowth",number:"144",rarity:"Illustration Rare"},{name:"Mega Venusaur ex",number:"145",rarity:"Rare Ultra"},{name:"Mega Camerupt ex",number:"146",rarity:"Rare Ultra"},{name:"Mega Abomasnow ex",number:"147",rarity:"Rare Ultra"},{name:"Mega Manectric ex",number:"148",rarity:"Rare Ultra"},{name:"Mega Gardevoir ex",number:"149",rarity:"Rare Ultra"},{name:"Mega Lucario ex",number:"150",rarity:"Rare Ultra"},{name:"Mega Tyranitar ex",number:"151",rarity:"Rare Ultra"},{name:"Mega Aggron ex",number:"152",rarity:"Rare Ultra"},{name:"Mega Goodra ex",number:"153",rarity:"Rare Ultra"},{name:"Persian ex",number:"154",rarity:"Rare Ultra"},{name:"Boss's Orders",number:"155",rarity:"Rare Ultra"},{name:"Lysandre",number:"156",rarity:"Rare Ultra"},{name:"Pokemon Center Lady",number:"157",rarity:"Rare Ultra"},{name:"Professor Sycamore",number:"158",rarity:"Rare Ultra"},{name:"Mega Venusaur ex",number:"159",rarity:"Special Illustration Rare"},{name:"Mega Manectric ex",number:"160",rarity:"Special Illustration Rare"},{name:"Mega Gardevoir ex",number:"161",rarity:"Special Illustration Rare"},{name:"Mega Lucario ex",number:"162",rarity:"Special Illustration Rare"},{name:"Mega Tyranitar ex",number:"163",rarity:"Special Illustration Rare"},{name:"Lysandre",number:"164",rarity:"Special Illustration Rare"},{name:"Pokemon Center Lady",number:"165",rarity:"Special Illustration Rare"},{name:"Professor Sycamore",number:"166",rarity:"Special Illustration Rare"},{name:"Mega Lucario ex",number:"167",rarity:"Mega Hyper Rare"},{name:"Mega Tyranitar ex",number:"168",rarity:"Mega Hyper Rare"},
+  ],
+};
+
+
+
+
+function showPublicPage(page) {
+  document.getElementById('bottom-nav-public').querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('nav-public-' + page);
+  if (btn) btn.classList.add('active');
+  if(page === 'buying') renderBuyingBoard();
+  else if(page === 'news') renderNews();
+}
+
+async function renderBuyingBoard() {
+  document.getElementById('app').innerHTML = `
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;letter-spacing:1px;">WE'RE BUYING</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;">Cards we're actively looking for at enhanced rates</div>
+    </div>
+    <div style="background:rgba(255,179,0,0.06);border:1px solid rgba(255,179,0,0.2);border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center;">
+        <div>
+          <div style="font-size:11px;color:var(--amber);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Cash Rate</div>
+          <div style="font-size:24px;font-weight:900;color:var(--amber);">70%</div>
+          <div style="font-size:10px;color:var(--muted);">of market value</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Store Credit</div>
+          <div style="font-size:24px;font-weight:900;color:var(--green);">80%</div>
+          <div style="font-size:10px;color:var(--muted);">of market value</div>
+        </div>
+      </div>
+    </div>
+    <div id="buying-board-cards"><div class="empty-state">Loading...</div></div>`;
+
+  try {
+    const requests = await db('GET', 'want_requests', null, '?status=neq.declined&order=submitted_at.desc');
+    if(!requests || !requests.length) {
+      document.getElementById('buying-board-cards').innerHTML = '<div class="empty-state">No active buying requests right now — check back soon!</div>';
+      return;
+    }
+
+    // Aggregate only published cards
+    const cardMap = {};
+    requests.forEach(r => {
+      const cards = JSON.parse(r.cards || '[]');
+      const publishedCards = JSON.parse(r.published_cards || '[]');
+      cards.forEach(c => {
+        const cardKey = c.cardName + '|' + c.setName + '|' + (c.cardNumber||'');
+        if(!publishedCards.includes(cardKey)) return; // skip unpublished
+        const key = c.cardName + '|' + c.setName + '|' + c.cardType;
+        if(!cardMap[key]) cardMap[key] = { cardName: c.cardName, setName: c.setName, cardNumber: c.cardNumber || '', cardType: c.cardType || '', count: 0, totalQty: 0 };
+        cardMap[key].count++;
+        cardMap[key].totalQty += (c.quantity || 1);
+      });
+    });
+
+    const cards = Object.values(cardMap).sort((a, b) => b.count - a.count);
+
+    document.getElementById('buying-board-cards').innerHTML = cards.map(c => {
+      const urgency = c.count >= 3 ? 'var(--red)' : c.count >= 2 ? 'var(--amber)' : 'var(--green)';
+      const msg = 'Hi Rockets Hideout! I saw you\'re looking for ' + c.cardName + ' (' + c.setName + (c.cardNumber ? ' #' + c.cardNumber : '') + ') — I have one available. Are you still buying?';
+      const waUrl = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(msg);
+      return `<div class="section" style="margin-bottom:8px;padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;">${c.cardName}</div>
+            <div style="font-size:11px;color:var(--muted);">${c.setName}${c.cardNumber ? ' · #' + c.cardNumber : ''} · ${c.cardType}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:16px;font-weight:900;color:${urgency};">${c.totalQty > 1 ? 'x' + c.totalQty : '⚡'}</div>
+            <div style="font-size:10px;color:var(--muted);">${c.totalQty > 1 ? 'needed' : 'wanted'}</div>
+          </div>
+        </div>
+        <a href="${waUrl}" target="_blank" style="display:block;text-align:center;text-decoration:none;width:100%;background:rgba(37,211,102,0.15);border:1.5px solid rgba(37,211,102,0.4);border-radius:9px;color:#25d366;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:.5px;text-transform:uppercase;padding:11px;">💬 I Have This Card</a>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('buying-board-cards').innerHTML = '<div class="empty-state">Unable to load right now. Please try again.</div>';
+  }
+}
+
+// ── NEWS ──
+function renderNewsCard(article) {
+  const titleLower = article.title.toLowerCase();
+  let tag = '', tagColor = '';
+  if (titleLower.includes('reveal') || titleLower.includes('preview')) { tag = 'Reveal'; tagColor = 'var(--blue)'; }
+  else if (titleLower.includes('tournament') || titleLower.includes('champion') || titleLower.includes('worlds') || titleLower.includes('regionals')) { tag = 'Tournament'; tagColor = 'var(--amber)'; }
+  else if (titleLower.includes('set') || titleLower.includes('expansion') || titleLower.includes('celebration')) { tag = 'New Set'; tagColor = 'var(--green)'; }
+  else if (titleLower.includes('promo')) { tag = 'Promo'; tagColor = 'var(--red)'; }
+  else { tag = 'News'; tagColor = 'var(--muted)'; }
+
+  const safeLink = (article.link || '#').replace(/'/g, "\\'");
+  return `<div class="section" style="margin-bottom:8px;padding:14px;cursor:pointer;" onclick="window.open('${safeLink}','_blank')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+      <div style="font-size:11px;font-weight:700;color:${tagColor};text-transform:uppercase;letter-spacing:.5px;">${tag}</div>
+      <div style="font-size:10px;color:var(--muted);">${article.date || ''}</div>
+    </div>
+    <div style="font-size:14px;font-weight:700;line-height:1.3;margin-bottom:6px;">${article.title}</div>
+    ${article.summary ? `<div style="font-size:12px;color:var(--muted);line-height:1.4;">${article.summary}</div>` : ''}
+    <div style="margin-top:10px;font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;">Read More →</div>
+  </div>`;
+}
+
+async function renderNews() {
+  const appEl = document.getElementById('app');
+  appEl.innerHTML = `
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;letter-spacing:1px;">📰 TCG NEWS</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;">Latest from PokéBeach</div>
+    </div>
+    <div id="news-feed"><div style="text-align:center;padding:30px;color:var(--muted);">
+      <div style="font-size:24px;margin-bottom:8px;">⏳</div>
+      <div>Fetching latest news...</div>
+    </div></div>`;
+
+  // Try multiple CORS-friendly RSS proxy services in sequence
+  const proxies = [
+    () => fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.pokebeach.com/feed')}&count=12`)
+          .then(r => r.json())
+          .then(d => {
+            if (d.status !== 'ok' || !d.items?.length) throw new Error('rss2json failed');
+            return d.items.map(item => ({
+              title: item.title,
+              link: item.link,
+              date: item.pubDate ? new Date(item.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              summary: (item.description || '').replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim().slice(0, 130)
+            }));
+          }),
+    () => fetch(`https://corsproxy.io/?${encodeURIComponent('https://www.pokebeach.com/feed')}`)
+          .then(r => r.text())
+          .then(text => {
+            const xml = new DOMParser().parseFromString(text, 'text/xml');
+            const items = [...xml.querySelectorAll('item')].slice(0, 12);
+            if (!items.length) throw new Error('No items');
+            return items.map(item => ({
+              title: item.querySelector('title')?.textContent || 'Untitled',
+              link: item.querySelector('link')?.textContent || '#',
+              date: (() => { const d = item.querySelector('pubDate')?.textContent; return d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; })(),
+              summary: (item.querySelector('description')?.textContent || '').replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim().slice(0, 130)
+            }));
+          }),
+  ];
+
+  let articles = null;
+  for (const attempt of proxies) {
+    try { articles = await attempt(); if (articles?.length) break; } catch(e) { /* try next */ }
+  }
+
+  if (articles && articles.length) {
+    document.getElementById('news-feed').innerHTML = articles.map(renderNewsCard).join('');
+  } else {
+    document.getElementById('news-feed').innerHTML = `
+      <div class="section" style="text-align:center;padding:24px;">
+        <div style="font-size:32px;margin-bottom:12px;">📡</div>
+        <div style="font-weight:600;margin-bottom:6px;">Couldn't load news right now</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">This works best when the app is opened in a browser with internet access. You can also visit PokéBeach directly.</div>
+        <a href="https://www.pokebeach.com" target="_blank" style="display:inline-block;background:var(--red);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:.5px;text-transform:uppercase;padding:11px 22px;border-radius:9px;text-decoration:none;">Visit PokéBeach</a>
+      </div>`;
+  }
+}
+
+// ── INIT ──
+try {
+  const saved = localStorage.getItem('rh_wl_user');
+  if (saved) { currentUser = JSON.parse(saved); enterApp(); }
+  else {
+    document.getElementById('bottom-nav-public').style.display = 'flex';
+    renderBuyingBoard();
+  }
+} catch(e) { renderAuth(); }
+</script>
+</body>
+</html>
